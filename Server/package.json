@@ -1,0 +1,13 @@
+{
+  "name": "least-effective-server",
+  "version": "0.1.0",
+  "description": "WebSocket server for Least Effective board game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "uuid": "^9.0.0"
+  }
+}
