@@ -655,12 +655,13 @@ wss.on('connection', (ws) => {
           const hasAction = needsNightAction(effectiveRole, game.round);
           const targets = targetCount(effectiveRole);
           const selectablePlayers = game.players
-            .filter(p => p.id !== existingPlayer.id)
+            .filter(p => p.id !== existingPlayer.id && p.alive)
             .map(p => ({ id: p.id, name: p.name, alive: p.alive }));
+          const actualTargets = Math.min(targets, selectablePlayers.length);
           const displayRoleName = existingPlayer.role === 'stagiaire' && existingPlayer.inheritedRole
             ? `Le Stagiaire (→ ${ROLES[existingPlayer.inheritedRole]?.name})`
             : ROLES[existingPlayer.role]?.name || '';
-          send(ws, { type: 'nightPrompt', hasAction, targetCount: targets, selectablePlayers, roleName: displayRoleName, role: effectiveRole });
+          send(ws, { type: 'nightPrompt', hasAction, targetCount: actualTargets, selectablePlayers, roleName: displayRoleName, role: effectiveRole });
         }
         break;
       }
@@ -952,15 +953,15 @@ function broadcastNightPrompts(game) {
         send(ws, { type: 'nightPrompt', hasAction: false, targetCount: 0, selectablePlayers: [] });
         continue;
       }
-      // Effective role: Stagiaire uses inherited, Burn-out uses fake
       let effectiveRole = player.role;
       if (player.role === 'stagiaire' && player.inheritedRole) effectiveRole = player.inheritedRole;
       if (player.fakeRole) effectiveRole = player.fakeRole;
       const hasAction = needsNightAction(effectiveRole, game.round);
       const targets = targetCount(effectiveRole);
       const selectablePlayers = game.players
-        .filter(p => p.id !== player.id)
+        .filter(p => p.id !== player.id && p.alive)
         .map(p => ({ id: p.id, name: p.name, alive: p.alive }));
+      const actualTargets = Math.min(targets, selectablePlayers.length);
 
       const displayRoleName = player.role === 'stagiaire' && player.inheritedRole
         ? `Le Stagiaire (→ ${ROLES[player.inheritedRole]?.name})`
@@ -969,7 +970,7 @@ function broadcastNightPrompts(game) {
       send(ws, {
         type: 'nightPrompt',
         hasAction,
-        targetCount: targets,
+        targetCount: actualTargets,
         selectablePlayers,
         roleName: displayRoleName,
         role: effectiveRole,

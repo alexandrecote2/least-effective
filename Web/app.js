@@ -338,7 +338,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.8 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.9 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -506,7 +506,7 @@ class App {
       `;
     }
 
-    if (this.nightHasAction) {
+    if (this.nightHasAction && this.nightTargetCount > 0) {
       const role = ROLES[this.nightRole] || {};
 
       return `
