@@ -55,7 +55,16 @@ class App {
     this.playerName = '';
     this.errorMessage = '';
     this.showNominateUI = false;
-    this.gameLog = []; // for end-of-game recap
+    this.gameLog = [];
+    this.reconnecting = false;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.gameCode && this.playerId) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+          this.reconnect();
+        }
+      }
+    });
 
     this.render();
   }
@@ -68,7 +77,34 @@ class App {
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => this.render();
-    this.ws.onclose = () => { this.phase = 'disconnected'; this.render(); };
+    this.ws.onclose = () => {
+      if (!this.reconnecting && this.gameCode) {
+        this.reconnect();
+      } else if (!this.reconnecting) {
+        this.phase = 'disconnected';
+        this.render();
+      }
+    };
+    this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
+  }
+
+  reconnect() {
+    this.reconnecting = true;
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = location.hostname || 'localhost';
+    const port = location.port || (protocol === 'wss:' ? 443 : 80);
+    const wsUrl = port == 443 || port == 80 ? `${protocol}//${host}` : `${protocol}//${host}:${port}`;
+    this.ws = new WebSocket(wsUrl);
+
+    this.ws.onopen = () => {
+      this.reconnecting = false;
+      this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
+    };
+    this.ws.onclose = () => {
+      this.reconnecting = false;
+      this.phase = 'disconnected';
+      this.render();
+    };
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
   }
 
@@ -234,7 +270,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.0 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.1 — "La Restructuration"</p>
       </div>
     `;
   }

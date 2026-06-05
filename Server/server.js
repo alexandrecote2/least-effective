@@ -578,7 +578,7 @@ function checkWinConditions(game) {
 const clients = new Map();
 
 wss.on('connection', (ws) => {
-  const playerId = uuidv4();
+  let playerId = uuidv4();
   clients.set(ws, { playerId, gameCode: null });
 
   ws.on('message', (data) => {
@@ -605,6 +605,63 @@ wss.on('connection', (ws) => {
         client.gameCode = game.code;
         send(ws, { type: 'gameJoined', code: game.code, playerId });
         broadcastGameState(game);
+        break;
+      }
+
+      case 'rejoinGame': {
+        const game = games.get(msg.code?.toUpperCase());
+        if (!game) { send(ws, { type: 'error', message: "Partie introuvable." }); break; }
+        const existingPlayer = game.players.find(p => p.id === msg.playerId);
+        if (!existingPlayer) { send(ws, { type: 'error', message: "Joueur introuvable dans cette partie." }); break; }
+        existingPlayer.connected = true;
+        client.gameCode = game.code;
+        client.playerId = msg.playerId;
+        // Reassign the playerId for this connection
+        playerId = msg.playerId;
+        send(ws, { type: 'gameJoined', code: game.code, playerId: msg.playerId });
+        broadcastGameState(game);
+        // Resend role info if game already started
+        if (existingPlayer.role) {
+          const influenceur = game.players.find(p => p.role === 'influenceur');
+          const leadershipPlayers = game.players.filter(p => ROLES[p.role]?.camp === 'mal');
+          const displayRole = existingPlayer.fakeRole || existingPlayer.role;
+          const roleMsg = {
+            type: 'yourRole',
+            role: displayRole,
+            roleName: ROLES[displayRole]?.name || ROLES[existingPlayer.role].name,
+            category: ROLES[displayRole]?.category || ROLES[existingPlayer.role].category,
+            camp: ROLES[displayRole]?.camp || ROLES[existingPlayer.role].camp,
+          };
+          const bonuses = [];
+          const nbMal = leadershipPlayers.length;
+          const nbBien = game.players.length - nbMal;
+          bonuses.push(`Composition : ${nbBien} 🔵 Frontline / ${nbMal} 🔴 Leadership`);
+          if (ROLES[existingPlayer.role]?.camp === 'mal' && influenceur) {
+            bonuses.push(`Il semble que ${influenceur.name} soit très impliqué(e) sur LinkedIn récemment.`);
+          }
+          roleMsg.bonusInfo = bonuses.join('\n\n');
+          const allRolesInScript = game.players.map(p => ROLES[p.role]?.name).filter(Boolean);
+          const decoyPool = ["L'Inspecteur du Travail", "Le Lanceur d'Alerte", "Le Cabinet de Reclassement", "Le Délégué du Personnel", "L'Agent d'Accueil", "Le Responsable Informatique"];
+          const decoysToAdd = decoyPool.filter(r => !allRolesInScript.includes(r)).slice(0, 2);
+          const possibleRoles = [...new Set([...allRolesInScript, ...decoysToAdd, 'Le Burn-out'])].sort();
+          roleMsg.possibleRoles = possibleRoles;
+          send(ws, roleMsg);
+        }
+        // Resend night prompt if in closing phase
+        if (game.phase === 'closingTheDay' && existingPlayer.alive) {
+          let effectiveRole = existingPlayer.role;
+          if (existingPlayer.role === 'stagiaire' && existingPlayer.inheritedRole) effectiveRole = existingPlayer.inheritedRole;
+          if (existingPlayer.fakeRole) effectiveRole = existingPlayer.fakeRole;
+          const hasAction = needsNightAction(effectiveRole, game.round);
+          const targets = targetCount(effectiveRole);
+          const selectablePlayers = game.players
+            .filter(p => p.id !== existingPlayer.id)
+            .map(p => ({ id: p.id, name: p.name, alive: p.alive }));
+          const displayRoleName = existingPlayer.role === 'stagiaire' && existingPlayer.inheritedRole
+            ? `Le Stagiaire (→ ${ROLES[existingPlayer.inheritedRole]?.name})`
+            : ROLES[existingPlayer.role]?.name || '';
+          send(ws, { type: 'nightPrompt', hasAction, targetCount: targets, selectablePlayers, roleName: displayRoleName, role: effectiveRole });
+        }
         break;
       }
 
