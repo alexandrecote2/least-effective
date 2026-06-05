@@ -138,7 +138,11 @@ class App {
           this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
         } else {
           this.phase = 'join';
+          this.send({ type: 'listGames' });
         }
+        break;
+      case 'gameList':
+        this.availableGames = msg.games || [];
         break;
       case 'gameCreated':
         this.gameCode = msg.code;
@@ -292,17 +296,31 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.5 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.6 — "La Restructuration"</p>
       </div>
     `;
   }
 
   renderJoin() {
+    const gamesHTML = this.availableGames?.length ? `
+      <div style="width:100%;">
+        <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;text-align:center;">PARTIES EN COURS</p>
+        ${this.availableGames.map(g => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="app.quickJoin('${g.code}')">
+            <span style="font-family:monospace;color:var(--accent);font-weight:700;">${g.code}</span>
+            <span style="flex:1;">${g.host}</span>
+            <span class="dim" style="font-size:0.8rem;">👥 ${g.playerCount}</span>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
     return `
       <div class="screen" style="justify-content:center;gap:24px;background:linear-gradient(180deg, var(--logo-red) 0%, var(--logo-blue) 100%);">
         <img src="logo.png" alt="" style="width:60px;height:60px;border-radius:12px;align-self:center;background:linear-gradient(135deg, var(--logo-red), var(--logo-blue));">
         <h2 class="center" style="letter-spacing:3px;">MULTIJOUEUR</h2>
         <input id="nameInput" placeholder="Votre nom" value="${this.playerName}">
+        ${gamesHTML}
         <div class="gap">
           <button class="btn btn-primary" onclick="app.createGame()">Lancer une Initiative</button>
           <div style="display:flex;gap:8px;">
@@ -719,6 +737,13 @@ class App {
     const code = document.getElementById('codeInput')?.value || '';
     if (!this.playerName || !code) return;
     this.send({ type: 'joinGame', code: code.toUpperCase(), playerName: this.playerName });
+    this.saveSession();
+  }
+
+  quickJoin(code) {
+    this.playerName = document.getElementById('nameInput')?.value || 'Joueur';
+    if (!this.playerName) { this.errorMessage = 'Entrez votre nom d\'abord.'; this.render(); return; }
+    this.send({ type: 'joinGame', code, playerName: this.playerName });
     this.saveSession();
   }
 

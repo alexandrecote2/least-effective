@@ -792,6 +792,17 @@ wss.on('connection', (ws) => {
 
       case 'ping': { send(ws, { type: 'pong' }); break; }
 
+      case 'listGames': {
+        const openGames = [];
+        for (const [code, game] of games) {
+          if (game.phase === 'lobby') {
+            openGames.push({ code, host: game.players[0]?.name || '?', playerCount: game.players.length });
+          }
+        }
+        send(ws, { type: 'gameList', games: openGames });
+        break;
+      }
+
       case 'closeDay': {
         const game = games.get(client.gameCode);
         if (!game || game.hostId !== playerId || game.phase !== 'meeting') break;
