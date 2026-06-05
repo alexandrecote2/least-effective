@@ -91,13 +91,28 @@ class App {
     const wsUrl = port == 443 || port == 80 ? `${protocol}//${host}` : `${protocol}//${host}:${port}`;
     this.ws = new WebSocket(wsUrl);
 
-    this.ws.onopen = () => this.render();
+    this.ws.onopen = () => {
+      this.startPing();
+      this.render();
+    };
     this.ws.onclose = () => {
+      this.stopPing();
       this.phase = 'disconnected';
       this.render();
     };
     this.ws.onerror = () => {};
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
+  }
+
+  startPing() {
+    this.stopPing();
+    this._pingInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping' });
+    }, 20000);
+  }
+
+  stopPing() {
+    if (this._pingInterval) { clearInterval(this._pingInterval); this._pingInterval = null; }
   }
 
   rejoin() {
@@ -111,9 +126,11 @@ class App {
 
     this.ws.onopen = () => {
       this.reconnecting = false;
+      this.startPing();
       this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
     };
     this.ws.onclose = () => {
+      this.stopPing();
       this.reconnecting = false;
       this.phase = 'disconnected';
       this.render();
@@ -151,7 +168,7 @@ class App {
         break;
       case 'gameJoined':
         this.gameCode = msg.code;
-        this.phase = 'lobby';
+        if (!this.myRole) this.phase = 'lobby';
         this.saveSession();
         break;
       case 'error':
@@ -321,7 +338,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.7 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.8 — "La Restructuration"</p>
       </div>
     `;
   }
