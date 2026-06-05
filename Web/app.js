@@ -117,8 +117,12 @@ class App {
   handleMessage(msg) {
     switch (msg.type) {
       case 'connected':
-        this.playerId = msg.playerId;
-        this.phase = 'join';
+        if (!this.playerId) {
+          this.playerId = msg.playerId;
+        }
+        if (!this.gameCode) {
+          this.phase = 'join';
+        }
         break;
       case 'gameCreated':
         this.gameCode = msg.code;
