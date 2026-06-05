@@ -198,6 +198,31 @@ class App {
   render() {
     const app = document.getElementById('app');
 
+    // Peek role overlay
+    if (this.showMyRole && this.myRoleName) {
+      const role = ROLES[this.myRole] || {};
+      const campClass = this.myCamp === 'mal' ? 'badge-leadership' : 'badge-frontline';
+      const campLabel = this.myCamp === 'mal' ? 'Leadership' : 'Frontline';
+      app.innerHTML = `
+        <div class="screen" style="justify-content:center;align-items:center;gap:20px;" onclick="app.hideRole()">
+          <p class="dim" style="font-size:0.7rem;letter-spacing:3px;">VOTRE FICHE DE POSTE</p>
+          <h2 style="font-size:1.6rem;color:var(--accent);">${this.myRoleName}</h2>
+          <span class="badge ${campClass}">${campLabel}</span>
+          <div class="card" style="max-width:320px;">
+            <p style="font-size:0.85rem;">${role.superpower || ''}</p>
+          </div>
+          ${this.privateResult ? `
+            <div class="card" style="border:1px solid var(--accent);max-width:320px;">
+              <p style="color:var(--accent);font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">DERNIER RAPPORT</p>
+              <p style="font-size:0.85rem;">${this.privateResult}</p>
+            </div>
+          ` : ''}
+          <p class="dim" style="font-size:0.75rem;">Appuyez n'importe où pour fermer</p>
+        </div>
+      `;
+      return;
+    }
+
     // Role guide overlay
     if (this.showRoleGuide && this.possibleRoles?.length > 0) {
       app.innerHTML = `
@@ -242,14 +267,14 @@ class App {
 
   renderPlayerHeader() {
     if (!this.playerName) return '';
-    const roleName = this.myRoleName || '';
-    const campColor = this.myCamp === 'mal' ? 'var(--red)' : 'var(--blue)';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div>
         <span style="opacity:0.6;font-size:0.75rem;">👤 ${this.playerName}</span>
-        ${roleName ? `<span style="margin-left:8px;font-size:0.75rem;color:${campColor};font-weight:600;">${roleName}</span>` : ''}
       </div>
-      <button onclick="app.toggleRoleGuide()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">📖 Rôles</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="app.peekRole()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">🔒 Mon rôle</button>
+        <button onclick="app.toggleRoleGuide()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">📖 Rôles</button>
+      </div>
     </div>`;
   }
 
@@ -296,7 +321,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.6 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.7 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -447,6 +472,8 @@ class App {
     if (this.nightActionDone) {
       const done = this.players.filter(p => p.nightActionDone).length;
       const alive = this.players.filter(p => p.alive).length;
+      const waiting = this.players.filter(p => p.alive && !p.nightActionDone);
+      const hasDisconnected = waiting.some(p => !p.connected);
       return `
         <div class="screen closing" style="justify-content:center;align-items:center;gap:20px;">
           ${this.renderDayBar()}
@@ -454,6 +481,9 @@ class App {
           <div class="icon-large">✓</div>
           <p class="dim italic center">Action soumise.<br>En attente des autres collaborateurs...</p>
           <p class="dim">${done}/${alive}</p>
+          ${waiting.length > 0 ? `<p class="dim" style="font-size:0.75rem;">En attente de : ${waiting.map(p => `${p.name}${!p.connected ? ' ⚠️' : ''}`).join(', ')}</p>` : ''}
+          ${this.isHost && hasDisconnected ? `<button class="btn btn-secondary" style="margin-top:12px;" onclick="app.skipDisconnected()">Passer les déconnectés</button>` : ''}
+          ${this.isHost && !hasDisconnected && waiting.length > 0 ? `<button class="btn btn-ghost" style="margin-top:12px;font-size:0.75rem;" onclick="app.forceAdvanceNight()">Forcer le passage</button>` : ''}
           <div class="spacer"></div>
         </div>
       `;
@@ -853,9 +883,27 @@ class App {
     this.render();
   }
 
+  peekRole() {
+    this.showMyRole = true;
+    this.render();
+  }
+
+  hideRole() {
+    this.showMyRole = false;
+    this.render();
+  }
+
   toggleRoleGuide() {
     this.showRoleGuide = !this.showRoleGuide;
     this.render();
+  }
+
+  skipDisconnected() {
+    this.send({ type: 'skipDisconnected' });
+  }
+
+  forceAdvanceNight() {
+    this.send({ type: 'skipDisconnected' });
   }
 
   closeDay() {

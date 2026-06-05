@@ -792,6 +792,16 @@ wss.on('connection', (ws) => {
 
       case 'ping': { send(ws, { type: 'pong' }); break; }
 
+      case 'skipDisconnected': {
+        const game = games.get(client.gameCode);
+        if (!game || game.hostId !== playerId || game.phase !== 'closingTheDay') break;
+        const waiting = game.players.filter(p => p.alive && !p.nightActionDone);
+        waiting.forEach(p => { p.nightActionDone = true; });
+        checkAllActed(game);
+        broadcastGameState(game);
+        break;
+      }
+
       case 'listGames': {
         const openGames = [];
         for (const [code, game] of games) {
