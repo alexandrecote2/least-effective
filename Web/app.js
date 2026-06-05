@@ -88,7 +88,13 @@ class App {
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
   }
 
-  reconnect() {
+  reconnect(attempt = 0) {
+    if (attempt > 5) {
+      this.reconnecting = false;
+      this.phase = 'disconnected';
+      this.render();
+      return;
+    }
     this.reconnecting = true;
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = location.hostname || 'localhost';
@@ -101,10 +107,9 @@ class App {
       this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
     };
     this.ws.onclose = () => {
-      this.reconnecting = false;
-      this.phase = 'disconnected';
-      this.render();
+      setTimeout(() => this.reconnect(attempt + 1), 1000 * (attempt + 1));
     };
+    this.ws.onerror = () => {};
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
   }
 
@@ -274,7 +279,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.2 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.3 — "La Restructuration"</p>
       </div>
     `;
   }
