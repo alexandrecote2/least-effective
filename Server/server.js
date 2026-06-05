@@ -744,12 +744,12 @@ wss.on('connection', (ws) => {
         const game = games.get(client.gameCode);
         if (!game || game.phase !== 'meeting') break;
         const nominator = game.players.find(p => p.id === playerId);
-        if (!nominator || !nominator.alive) break; // Dead players can't nominate
+        if (!nominator || !nominator.alive) break;
         const target = game.players.find(p => p.id === msg.targetId);
-        if (target && target.alive) {
-          game.nominations.push({ targetId: msg.targetId, targetName: target.name, nominatedBy: playerId, votes: 0, voters: [] });
-          broadcastGameState(game);
-        }
+        if (!target || !target.alive) break;
+        if (game.nominations.some(n => n.targetId === msg.targetId)) break;
+        game.nominations.push({ targetId: msg.targetId, targetName: target.name, nominatedBy: playerId, votes: 0, voters: [] });
+        broadcastGameState(game);
         break;
       }
 
@@ -762,7 +762,7 @@ wss.on('connection', (ws) => {
         if (!voter.alive && voter.hasUsedDeadVote) break;
         if (nomination.voters.includes(playerId)) break;
         nomination.voters.push(playerId);
-        nomination.votes += 1;
+        if (!msg.keep) nomination.votes += 1;
         if (!voter.alive) voter.hasUsedDeadVote = true;
         broadcastGameState(game);
         break;

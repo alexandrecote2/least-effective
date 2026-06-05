@@ -279,7 +279,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.3 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.4 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -572,11 +572,11 @@ class App {
             const voted = n.voters.includes(this.playerId);
             let voteUI = '';
             if (voted) {
-              voteUI = '<span style="color:green;">✓ Voté</span>';
+              voteUI = `<span style="color:green;font-size:0.8rem;">✓ ${this.votedChoice === n.targetId ? 'Licencier' : 'Garder'}</span>`;
             } else if (!canVote) {
               voteUI = '<span class="dim" style="font-size:0.7rem;">vote épuisé</span>';
             } else {
-              voteUI = `<button class="vote-btn" onclick="app.vote('${n.targetId}')">Voter</button>`;
+              voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Licencier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
             }
             return `
               <div class="nom-card">
@@ -783,7 +783,15 @@ class App {
   }
 
   vote(targetId) {
+    this.votedChoice = targetId;
     this.send({ type: 'vote', targetId });
+    this.render();
+  }
+
+  voteKeep(targetId) {
+    this.votedChoice = null;
+    this.send({ type: 'vote', targetId, keep: true });
+    this.render();
   }
 
   toggleRoleGuide() {
