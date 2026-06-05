@@ -58,15 +58,30 @@ class App {
     this.gameLog = [];
     this.reconnecting = false;
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && this.gameCode && this.playerId) {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-          this.reconnect();
-        }
-      }
-    });
+    // Restore session from localStorage
+    const saved = localStorage.getItem('le_session');
+    if (saved) {
+      const s = JSON.parse(saved);
+      this.playerId = s.playerId;
+      this.gameCode = s.gameCode;
+      this.playerName = s.playerName;
+      this.isHost = s.isHost || false;
+    }
 
     this.render();
+  }
+
+  saveSession() {
+    localStorage.setItem('le_session', JSON.stringify({
+      playerId: this.playerId,
+      gameCode: this.gameCode,
+      playerName: this.playerName,
+      isHost: this.isHost,
+    }));
+  }
+
+  clearSession() {
+    localStorage.removeItem('le_session');
   }
 
   connect() {
@@ -78,24 +93,16 @@ class App {
 
     this.ws.onopen = () => this.render();
     this.ws.onclose = () => {
-      if (!this.reconnecting && this.gameCode) {
-        this.reconnect();
-      } else if (!this.reconnecting) {
-        this.phase = 'disconnected';
-        this.render();
-      }
+      this.phase = 'disconnected';
+      this.render();
     };
+    this.ws.onerror = () => {};
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
   }
 
-  reconnect(attempt = 0) {
-    if (attempt > 5) {
-      this.reconnecting = false;
-      this.phase = 'disconnected';
-      this.render();
-      return;
-    }
+  rejoin() {
     this.reconnecting = true;
+    this.render();
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = location.hostname || 'localhost';
     const port = location.port || (protocol === 'wss:' ? 443 : 80);
@@ -107,7 +114,9 @@ class App {
       this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
     };
     this.ws.onclose = () => {
-      setTimeout(() => this.reconnect(attempt + 1), 1000 * (attempt + 1));
+      this.reconnecting = false;
+      this.phase = 'disconnected';
+      this.render();
     };
     this.ws.onerror = () => {};
     this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
@@ -125,17 +134,21 @@ class App {
         if (!this.playerId) {
           this.playerId = msg.playerId;
         }
-        if (!this.gameCode) {
+        if (this.gameCode && this.playerId) {
+          this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
+        } else {
           this.phase = 'join';
         }
         break;
       case 'gameCreated':
         this.gameCode = msg.code;
         this.phase = 'lobby';
+        this.saveSession();
         break;
       case 'gameJoined':
         this.gameCode = msg.code;
         this.phase = 'lobby';
+        this.saveSession();
         break;
       case 'error':
         this.errorMessage = msg.message;
@@ -279,7 +292,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.4 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v2.5 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -662,6 +675,25 @@ class App {
   }
 
   renderDisconnected() {
+    if (this.reconnecting) {
+      return `
+        <div class="screen" style="justify-content:center;align-items:center;gap:20px;">
+          <div class="icon-large">🔄</div>
+          <p>Reconnexion en cours...</p>
+        </div>
+      `;
+    }
+    if (this.gameCode && this.playerId) {
+      return `
+        <div class="screen" style="justify-content:center;align-items:center;gap:20px;">
+          <div class="icon-large">📡</div>
+          <p>Connexion perdue.</p>
+          <p class="dim" style="font-size:0.8rem;">Partie : <strong style="font-family:monospace;color:var(--accent);">${this.gameCode}</strong></p>
+          <button class="btn btn-primary" onclick="app.rejoin()">Rejoindre la partie</button>
+          <button class="btn btn-ghost" onclick="app.newGame()">Nouvelle partie</button>
+        </div>
+      `;
+    }
     return `
       <div class="screen" style="justify-content:center;align-items:center;gap:20px;">
         <p class="dim">Connexion perdue.</p>
@@ -679,6 +711,7 @@ class App {
     if (!this.playerName) return;
     this.isHost = true;
     this.send({ type: 'createGame', playerName: this.playerName });
+    this.saveSession();
   }
 
   joinGame() {
@@ -686,6 +719,7 @@ class App {
     const code = document.getElementById('codeInput')?.value || '';
     if (!this.playerName || !code) return;
     this.send({ type: 'joinGame', code: code.toUpperCase(), playerName: this.playerName });
+    this.saveSession();
   }
 
   startGame() {
@@ -801,6 +835,11 @@ class App {
 
   closeDay() {
     this.send({ type: 'closeDay' });
+  }
+
+  newGame() {
+    this.clearSession();
+    location.reload();
   }
 }
 

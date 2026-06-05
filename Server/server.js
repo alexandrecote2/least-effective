@@ -790,6 +790,8 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'ping': { send(ws, { type: 'pong' }); break; }
+
       case 'closeDay': {
         const game = games.get(client.gameCode);
         if (!game || game.hostId !== playerId || game.phase !== 'meeting') break;
