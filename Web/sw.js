@@ -1,4 +1,4 @@
-const CACHE_NAME = 'least-effective-v2.1';
+const CACHE_NAME = 'least-effective-v2.2';
 const ASSETS = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json'];
 
 self.addEventListener('install', e => {
