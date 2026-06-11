@@ -529,7 +529,7 @@ function resolveNight(game) {
         roundEvents.push(`🔒 ${actor.name} (Responsable Informatique) a verrouillé ${names} — ni ciblable, ni actif ce quarter`);
         break;
       case 'agentNettoyage':
-        roundEvents.push(`🔍 ${actor.name} (Agent de Nettoyage) a vérifié combien parmi ${names} sont Leadership (résultat : un chiffre reçu en privé)`);
+        roundEvents.push(`🔍 ${actor.name} (Agent de Nettoyage) a vérifié combien parmi ${names} sont dans le Leadership (résultat reçu en privé)`);
         break;
       case 'analyste':
         roundEvents.push(`📊 ${actor.name} (Analyste) a vérifié combien de voisins de ${names} sont dans le Leadership (résultat reçu en privé)`);
