@@ -814,6 +814,19 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'deleteGame': {
+        const game = games.get(client.gameCode);
+        if (!game || game.hostId !== playerId) break;
+        for (const [ws2, c] of clients) {
+          if (c.gameCode === game.code) {
+            send(ws2, { type: 'gameDeleted' });
+            c.gameCode = null;
+          }
+        }
+        games.delete(game.code);
+        break;
+      }
+
       case 'closeDay': {
         const game = games.get(client.gameCode);
         if (!game || game.hostId !== playerId || game.phase !== 'meeting') break;
@@ -1035,7 +1048,7 @@ function broadcastPrivateResults(game) {
 server.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════╗
-║   LEAST EFFECTIVE — Server v0.1                 ║
+║   LEAST EFFECTIVE — Server v3.0                 ║
 ║   "Restructuring in progress"                   ║
 ║                                                  ║
 ║   🌐 Web app:    http://localhost:${PORT}          ║

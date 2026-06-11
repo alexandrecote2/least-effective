@@ -175,6 +175,12 @@ class App {
       case 'error':
         this.errorMessage = msg.message;
         break;
+      case 'gameDeleted':
+        this.gameCode = null;
+        this.phase = 'join';
+        this.myRole = null;
+        this.clearSession();
+        break;
       case 'gameState':
         this.phase = msg.phase;
         this.round = msg.round;
@@ -376,6 +382,7 @@ class App {
           </div>
         </div>
         ${this.errorMessage ? `<p style="color:var(--red);text-align:center;font-size:0.85rem;">${this.errorMessage}</p>` : ''}
+        <button class="btn btn-ghost" onclick="app.backToHome()">← Retour</button>
       </div>
     `;
   }
@@ -399,7 +406,10 @@ class App {
           `).join('')}
         </div>
         <div class="spacer"></div>
-        ${this.isHost ? `<button class="btn btn-primary" ${this.players.length < 2 ? 'disabled' : ''} onclick="app.startGame()">Lancer la Restructuration</button>` : '<p class="center dim italic">En attente du lancement...</p>'}
+        ${this.isHost ? `
+          <button class="btn btn-primary" ${this.players.length < 2 ? 'disabled' : ''} onclick="app.startGame()">Lancer la Restructuration</button>
+          <button class="btn btn-ghost" style="margin-top:8px;color:var(--red);font-size:0.8rem;" onclick="app.deleteGame()">Supprimer la partie</button>
+        ` : '<p class="center dim italic">En attente du lancement...</p>'}
       </div>
     `;
   }
@@ -783,24 +793,32 @@ class App {
   // ACTIONS
   // ============================================================
 
+  backToHome() {
+    if (this.ws) { this.ws.close(); this.ws = null; }
+    this.phase = 'home';
+    this.errorMessage = '';
+    this.render();
+  }
+
   createGame() {
-    this.playerName = document.getElementById('nameInput')?.value || 'Joueur';
-    if (!this.playerName) return;
+    this.playerName = document.getElementById('nameInput')?.value?.trim() || '';
+    if (!this.playerName) { this.errorMessage = 'Entrez votre nom d\'abord.'; this.render(); return; }
     this.isHost = true;
     this.send({ type: 'createGame', playerName: this.playerName });
     this.saveSession();
   }
 
   joinGame() {
-    this.playerName = document.getElementById('nameInput')?.value || 'Joueur';
+    this.playerName = document.getElementById('nameInput')?.value?.trim() || '';
     const code = document.getElementById('codeInput')?.value || '';
-    if (!this.playerName || !code) return;
+    if (!this.playerName) { this.errorMessage = 'Entrez votre nom d\'abord.'; this.render(); return; }
+    if (!code) { this.errorMessage = 'Entrez un code de partie.'; this.render(); return; }
     this.send({ type: 'joinGame', code: code.toUpperCase(), playerName: this.playerName });
     this.saveSession();
   }
 
   quickJoin(code) {
-    this.playerName = document.getElementById('nameInput')?.value || 'Joueur';
+    this.playerName = document.getElementById('nameInput')?.value?.trim() || '';
     if (!this.playerName) { this.errorMessage = 'Entrez votre nom d\'abord.'; this.render(); return; }
     this.send({ type: 'joinGame', code, playerName: this.playerName });
     this.saveSession();
@@ -937,6 +955,10 @@ class App {
 
   closeDay() {
     this.send({ type: 'closeDay' });
+  }
+
+  deleteGame() {
+    this.send({ type: 'deleteGame' });
   }
 
   newGame() {
