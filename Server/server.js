@@ -1042,6 +1042,26 @@ function broadcastPrivateResults(game) {
 }
 
 // ============================================================
+// Cleanup stale games every 60s
+// ============================================================
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [code, game] of games) {
+    const allDisconnected = game.players.every(p => !p.connected);
+    const isFinished = game.phase === 'gameEnd';
+    if (!game._lastActivity) game._lastActivity = now;
+    if (allDisconnected || isFinished) {
+      if (now - game._lastActivity > 5 * 60 * 1000) {
+        games.delete(code);
+      }
+    } else {
+      game._lastActivity = now;
+    }
+  }
+}, 60000);
+
+// ============================================================
 // Start
 // ============================================================
 

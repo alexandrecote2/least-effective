@@ -224,6 +224,13 @@ class App {
         break;
       case 'error':
         this.errorMessage = msg.message;
+        if (msg.message === 'Partie introuvable.' || msg.message === 'Joueur introuvable dans cette partie.') {
+          this.gameCode = null;
+          this.myRole = null;
+          this.phase = 'join';
+          this.clearSession();
+          this.send({ type: 'listGames' });
+        }
         break;
       case 'gameDeleted':
         this.gameCode = null;
@@ -362,6 +369,7 @@ class App {
       <div style="display:flex;gap:6px;">
         <button onclick="app.peekRole()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">🔒 Mon rôle</button>
         <button onclick="app.toggleRoleGuide()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">📖 Rôles</button>
+        <button onclick="app.leaveGame()" style="background:none;border:1px solid rgba(255,100,100,0.3);border-radius:6px;color:var(--red);font-size:0.7rem;padding:4px 8px;cursor:pointer;">✕</button>
       </div>
     </div>`;
   }
@@ -1028,6 +1036,20 @@ class App {
     if (confirm('Personne n\'a été nominé. Passer directement au closing ?')) {
       this.send({ type: 'closeDay' });
     }
+  }
+
+  leaveGame() {
+    if (!confirm('Quitter cette partie ?')) return;
+    this.gameCode = null;
+    this.myRole = null;
+    this.myRoleName = null;
+    this.myCamp = null;
+    this.roleAcknowledged = false;
+    this.nightActionDone = false;
+    this.clearSession();
+    this.phase = 'join';
+    this.send({ type: 'listGames' });
+    this.render();
   }
 
   deleteGame() {
