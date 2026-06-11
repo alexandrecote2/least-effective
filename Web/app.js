@@ -219,7 +219,7 @@ class App {
         break;
       case 'gameJoined':
         this.gameCode = msg.code;
-        if (!this.myRole) this.phase = 'lobby';
+        if (!this.myRole && this.phase === 'join') this.phase = 'lobby';
         this.saveSession();
         break;
       case 'error':
@@ -235,6 +235,9 @@ class App {
         this.phase = msg.phase;
         this.round = msg.round;
         this.players = msg.players;
+        if (msg.phase !== 'roleReveal' && msg.phase !== 'lobby' && msg.phase !== 'seatingOrder') {
+          this.roleAcknowledged = true;
+        }
         const newNominations = msg.nominations || [];
         if (newNominations.length === 0 && this.nominations.length > 0) {
           this.myVotes = {};
@@ -251,8 +254,9 @@ class App {
         this.myCamp = msg.camp;
         this.bonusInfo = msg.bonusInfo || null;
         this.possibleRoles = msg.possibleRoles || [];
-        this.phase = 'roleReveal';
-        this.roleAcknowledged = false;
+        if (!this.roleAcknowledged) {
+          this.phase = 'roleReveal';
+        }
         break;
       case 'nightPrompt':
         this.nightHasAction = msg.hasAction;
@@ -261,10 +265,16 @@ class App {
         this.nightRoleName = msg.roleName || '';
         this.nightRole = msg.role || '';
         this.nightHasChoice = msg.hasChoice || false;
-        this.nightChoiceMade = null; // 'poison' or 'slides'
-        this.nightActionDone = false;
+        this.nightChoiceMade = null;
         this.selectedTargets = new Set();
         this.privateResult = null;
+        // Respect server-side nightActionDone (survives reconnect)
+        const me = this.players.find(p => p.id === this.playerId);
+        if (me && me.nightActionDone) {
+          this.nightActionDone = true;
+        } else {
+          this.nightActionDone = false;
+        }
         break;
       case 'privateResult':
         this.privateResult = msg.message;
