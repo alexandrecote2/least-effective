@@ -1073,7 +1073,7 @@ setInterval(() => {
 server.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════╗
-║   LEAST EFFECTIVE — Server v3.0                 ║
+║   LEAST EFFECTIVE — Server v3.1                 ║
 ║   "Restructuring in progress"                   ║
 ║                                                  ║
 ║   🌐 Web app:    http://localhost:${PORT}          ║

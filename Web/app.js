@@ -410,14 +410,14 @@ class App {
   renderHome() {
     return `
       <div class="screen" style="justify-content:center;align-items:center;gap:30px;background:linear-gradient(135deg, var(--logo-red) 0%, var(--logo-blue) 100%);">
-        <img src="logo.png" alt="Least Effective" style="width:160px;height:160px;border-radius:32px;box-shadow:0 8px 32px rgba(0,0,0,0.4);background:linear-gradient(135deg, var(--logo-red), var(--logo-blue));">
+        <img src="logo.png" alt="Least Effective" style="width:220px;height:220px;border-radius:44px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
         <div class="center">
           <h1 style="font-size:2.2rem;font-weight:900;">LEAST</h1>
           <h1 style="font-size:2.2rem;font-weight:900;color:var(--accent);">EFFECTIVE</h1>
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.8rem;opacity:0.4;">v3.0 — "La Restructuration"</p>
+        <p style="font-size:0.8rem;opacity:0.4;">v3.1 — "La Restructuration"</p>
       </div>
     `;
   }
