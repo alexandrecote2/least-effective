@@ -242,7 +242,7 @@ class App {
         this.phase = msg.phase;
         this.round = msg.round;
         this.players = msg.players;
-        if (msg.phase !== 'roleReveal' && msg.phase !== 'lobby' && msg.phase !== 'seatingOrder') {
+        if (msg.phase !== 'roleReveal' && msg.phase !== 'lobby' && msg.phase !== 'seatingOrder' && msg.phase !== 'rules') {
           this.roleAcknowledged = true;
         }
         const newNominations = msg.nominations || [];
@@ -345,6 +345,7 @@ class App {
       case 'join': app.innerHTML = this.renderJoin(); break;
       case 'lobby': app.innerHTML = this.renderLobby(); break;
       case 'seatingOrder': app.innerHTML = this.renderSeating(); break;
+      case 'rules': app.innerHTML = this.renderRules(); break;
       case 'roleReveal': app.innerHTML = this.renderRoleReveal(); break;
       case 'closingTheDay': app.innerHTML = this.renderClosing(); break;
       case 'pauseCafe': app.innerHTML = this.renderCafe(); break;
@@ -512,6 +513,41 @@ class App {
           <p class="dim italic center">L'hôte organise le plan de table...</p>
           <div class="spacer"></div>
         `}
+      </div>
+    `;
+  }
+
+  renderRules() {
+    return `
+      <div class="screen" style="gap:16px;overflow-y:auto;">
+        <div class="center" style="padding-top:20px;">
+          <h2 style="color:var(--accent);">Comment jouer</h2>
+        </div>
+        <div class="card">
+          <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">⏱️ Le temps</p>
+          <p>La partie se joue en <strong>Quarters</strong> (Q1, Q2, Q3...). Chaque Quarter = un jour complet avec 4 phases.</p>
+        </div>
+        <div class="card">
+          <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">📅 Les 4 phases d'un Quarter</p>
+          <p><strong>☕ Café</strong> — On découvre ce qui s'est passé la nuit. Infos, rumeurs, remerciements.</p>
+          <p style="margin-top:6px;"><strong>🤝 Tractations</strong> — Discussion libre. Négociez, mentez, observez.</p>
+          <p style="margin-top:6px;"><strong>👥 Meeting</strong> — Nominez un collègue puis votez : Remercier ou Garder.</p>
+          <p style="margin-top:6px;"><strong>🔒 Closing</strong> — La nuit. Les rôles avec un pouvoir agissent en secret.</p>
+        </div>
+        <div class="card">
+          <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">🏆 Victoire</p>
+          <p><strong>🔵 Frontline gagne</strong> si le CEO est remercié (par vote ou pouvoir spécial).</p>
+          <p style="margin-top:6px;"><strong>🔴 Leadership gagne</strong> s'il ne reste que 2 joueurs en jeu.</p>
+        </div>
+        <div class="card">
+          <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">💡 À savoir</p>
+          <p>• Q1 n'a pas de Meeting — c'est la nuit directement après les rôles.</p>
+          <p style="margin-top:4px;">• Le CEO ne peut remercier personne en Q1.</p>
+          <p style="margin-top:4px;">• Les joueurs remerciés ont encore 1 vote à utiliser une seule fois.</p>
+          <p style="margin-top:4px;">• Votre pouvoir est décrit sur votre fiche de poste (écran suivant).</p>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" onclick="app.acknowledgeRules()">Compris, montrez-moi mon rôle</button>
       </div>
     `;
   }
@@ -913,6 +949,10 @@ class App {
 
   confirmSeating() {
     this.send({ type: 'confirmSeating', order: this.seatingOrder.map(p => p.id) });
+  }
+
+  acknowledgeRules() {
+    this.send({ type: 'rulesAcknowledged' });
   }
 
   acknowledgeRole() {

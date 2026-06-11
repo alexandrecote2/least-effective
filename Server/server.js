@@ -58,7 +58,7 @@ function createGame(hostId, hostName) {
     hostId,
     phase: 'lobby',
     round: 1,
-    players: [{ id: hostId, name: hostName, role: null, alive: true, hasUsedDeadVote: false, connected: true, roleAcknowledged: false, nightActionDone: false }],
+    players: [{ id: hostId, name: hostName, role: null, alive: true, hasUsedDeadVote: false, connected: true, roleAcknowledged: false, rulesAcknowledged: false, nightActionDone: false }],
     nightActions: {},
     currentPlayerIndex: 0,
     pendingVoteElimination: null,
@@ -601,7 +601,7 @@ wss.on('connection', (ws) => {
         const game = games.get(msg.code?.toUpperCase());
         if (!game) { send(ws, { type: 'error', message: "Code invalide. Escaladez." }); break; }
         if (game.phase !== 'lobby') { send(ws, { type: 'error', message: "La réunion a déjà commencé." }); break; }
-        game.players.push({ id: playerId, name: msg.playerName, role: null, alive: true, hasUsedDeadVote: false, connected: true, roleAcknowledged: false, nightActionDone: false });
+        game.players.push({ id: playerId, name: msg.playerName, role: null, alive: true, hasUsedDeadVote: false, connected: true, roleAcknowledged: false, rulesAcknowledged: false, nightActionDone: false });
         client.gameCode = game.code;
         send(ws, { type: 'gameJoined', code: game.code, playerId });
         broadcastGameState(game);
@@ -678,15 +678,26 @@ wss.on('connection', (ws) => {
       case 'confirmSeating': {
         const game = games.get(client.gameCode);
         if (!game || game.hostId !== playerId) break;
-        // msg.order is an array of player IDs in circle order
         if (msg.order && msg.order.length === game.players.length) {
           const reordered = msg.order.map(id => game.players.find(p => p.id === id)).filter(Boolean);
           game.players = reordered;
         }
         distributeRoles(game);
-        game.phase = 'roleReveal';
+        game.phase = 'rules';
         broadcastGameState(game);
-        broadcastPrivateRoles(game);
+        break;
+      }
+
+      case 'rulesAcknowledged': {
+        const game = games.get(client.gameCode);
+        if (!game) break;
+        const player = game.players.find(p => p.id === playerId);
+        if (player) player.rulesAcknowledged = true;
+        if (game.players.every(p => p.rulesAcknowledged)) {
+          game.phase = 'roleReveal';
+          broadcastGameState(game);
+          broadcastPrivateRoles(game);
+        }
         break;
       }
 
