@@ -57,6 +57,7 @@ class App {
     this.showNominateUI = false;
     this.gameLog = [];
     this.reconnecting = false;
+    this.myVotes = {}; // targetId -> 'fire' | 'keep'
 
     // Restore session from localStorage
     const saved = localStorage.getItem('le_session');
@@ -178,7 +179,11 @@ class App {
         this.phase = msg.phase;
         this.round = msg.round;
         this.players = msg.players;
-        this.nominations = msg.nominations || [];
+        const newNominations = msg.nominations || [];
+        if (newNominations.length === 0 && this.nominations.length > 0) {
+          this.myVotes = {};
+        }
+        this.nominations = newNominations;
         this.morningMessages = msg.morningMessages || [];
         this.winner = msg.winner;
         this.deckDeSlides = msg.deckDeSlides || null;
@@ -338,7 +343,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v2.9 — "La Restructuration"</p>
+        <p style="font-size:0.7rem;opacity:0.4;">v3.0 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -648,17 +653,24 @@ class App {
           const canVote = me && (me.alive || !me.hasUsedDeadVote);
           return this.nominations.map(n => {
             const voted = n.voters.includes(this.playerId);
+            const myChoice = this.myVotes[n.targetId];
             let voteUI = '';
             if (voted) {
-              voteUI = `<span style="color:green;font-size:0.8rem;">✓ ${this.votedChoice === n.targetId ? 'Licencier' : 'Garder'}</span>`;
+              const choiceLabel = myChoice === 'fire' ? '🔴 Licencier' : '🟢 Garder';
+              voteUI = `<span style="font-size:0.8rem;">${choiceLabel}</span>`;
             } else if (!canVote) {
               voteUI = '<span class="dim" style="font-size:0.7rem;">vote épuisé</span>';
             } else {
               voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Licencier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
             }
+            const totalVoters = n.voters.length;
+            const voteCount = n.votes;
             return `
               <div class="nom-card">
-                <span style="font-weight:600;">${n.targetName}</span>
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <span style="font-weight:600;">${n.targetName}</span>
+                  <span class="dim" style="font-size:0.75rem;">${voteCount} licencier / ${totalVoters - voteCount} garder</span>
+                </div>
                 <div style="display:flex;align-items:center;gap:8px;">${voteUI}</div>
               </div>
             `;
@@ -889,13 +901,13 @@ class App {
   }
 
   vote(targetId) {
-    this.votedChoice = targetId;
+    this.myVotes[targetId] = 'fire';
     this.send({ type: 'vote', targetId });
     this.render();
   }
 
   voteKeep(targetId) {
-    this.votedChoice = null;
+    this.myVotes[targetId] = 'keep';
     this.send({ type: 'vote', targetId, keep: true });
     this.render();
   }
