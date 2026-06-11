@@ -3,31 +3,31 @@
 // ============================================================
 
 const ROLES = {
-  ceo: { name: 'Le CEO', camp: 'mal', superpower: "Chaque quarter au closing (sauf Q1), vous remerciez un collaborateur. Personne ne connaît votre identité. Survivez aux votes et la restructuration sera complète." },
-  consultant: { name: 'Le Consultant', camp: 'mal', superpower: "Chaque quarter au closing, choisissez un collègue à empoisonner — ses infos seront fausses sans qu'il le sache. En parallèle, un Deck de Slides (3 affirmations dont 1 fausse) est publié au café. Comme un vrai cabinet : cher et peu fiable." },
-  drh: { name: 'Le DRH', camp: 'mal', superpower: "Chaque quarter au closing, bloquez le pouvoir d'un collaborateur Frontline. Il ne saura même pas que son action a été classée sans suite." },
-  directeurFinancier: { name: 'Le Directeur Financier', camp: 'mal', superpower: "Lors du vote, inversez secrètement le vote d'un joueur ciblé. Les chiffres disent ce que vous voulez qu'ils disent." },
-  fondateur: { name: 'Le Fondateur', camp: 'mal', superpower: "Usage unique. Quand le CEO se fait remercier par vote, redirigez le remerciement vers quelqu'un d'autre. Le CEO survit." },
-  agentNettoyage: { name: "L'Agent de Nettoyage", camp: 'bien', superpower: "Chaque quarter au closing, sélectionnez 3 collègues. L'app vous dit combien sont Leadership. Il passe partout, personne ne le remarque." },
-  analyste: { name: "L'Analyste", camp: 'bien', superpower: "Chaque quarter au closing, choisissez un collègue. Vous apprendrez combien de ses voisins directs (gauche/droite) sont dans le Leadership." },
-  chasseurDeTetes: { name: 'Le Chasseur de Têtes', camp: 'bien', superpower: "Chaque quarter au closing, choisissez 2 collègues. Vous saurez si l'un d'eux est le CEO." },
-  recruteur: { name: 'Le Recruteur', camp: 'bien', superpower: "Chaque quarter au closing, choisissez 2 collègues. On vous dit : 'Un de ces 2 est [rôle X]'." },
-  assistanteDirection: { name: "L'Assistante de Direction", camp: 'bien', superpower: "Chaque quarter, vous apprenez quels rôles ont agi (mais pas qui). Elle sait tout ce qui se passe dans cette boîte." },
-  alternant: { name: "L'Alternant", camp: 'bien', superpower: "Après chaque vote, vous apprenez si au moins un Advisor a voté pour le remerciement. Personne ne fait attention à lui, mais il note tout." },
-  agentAccueil: { name: "L'Agent d'Accueil", camp: 'bien', superpower: "Quand quelqu'un est remercié par vote, vous apprenez secrètement son camp (pas son rôle). Il voit passer tout le monde au badge." },
-  avocat: { name: "L'Avocat", camp: 'bien', superpower: "Chaque quarter au closing, protégez un collègue (pas vous-même). Vous ne saurez pas si votre protection a fonctionné avant la fin de la partie." },
-  deleguePersonnel: { name: 'Le Délégué du Personnel', camp: 'bien', superpower: "Passif. Vous ne pouvez pas être remercié par le CEO. Votre CDI est en béton armé." },
-  responsableInfo: { name: 'Le Responsable Informatique', camp: 'bien', superpower: "Chaque quarter au closing, verrouillez un joueur : il ne peut ni être ciblé, ni utiliser son pouvoir. Peut gêner les deux camps." },
-  journaliste: { name: "Le Journaliste d'Investigation", camp: 'bien', superpower: "Usage unique, en phase Meeting. Déclarez une Class Action contre un joueur. Si c'est le CEO → victoire immédiate. Sinon → plainte classée sans suite." },
-  lanceurAlerte: { name: "Le Lanceur d'Alerte", camp: 'bien', superpower: "À votre remerciement, vous forcez un vote sans secondement au quarter suivant contre un joueur de votre choix." },
-  inspecteurTravail: { name: "L'Inspecteur du Travail", camp: 'bien', superpower: "Passif, usage unique. Le premier joueur qui vous nomine pour un Plan de Performance est immédiatement remercié à votre place." },
-  cabinetReclassement: { name: 'Le Cabinet de Reclassement', camp: 'bien', superpower: "Usage unique. Réembauchez un joueur remercié : il revient actif avec son pouvoir." },
-  burnout: { name: 'Le Burn-out', camp: 'bien', superpower: "Vous pensez avoir un vrai pouvoir. Toutes vos infos sont fausses. Vous êtes là physiquement, mentalement aux Maldives." },
-  influenceur: { name: "L'Influenceur", camp: 'bien', superpower: "Le Leadership connaît votre identité dès le départ. Vous êtes trop visible. Ravi d'annoncer que j'ai rejoint cette aventure." },
-  delegueSyndical: { name: 'Le Délégué Syndical', camp: 'bien', superpower: "Tant que vous êtes actif, il faut 2 secondements au lieu de 1 pour déclencher un Plan de Performance. On ne peut pas licencier comme ça." },
-  coach: { name: 'Le Coach', camp: 'bien', superpower: "Chaque quarter au closing, vous copiez le pouvoir d'un rôle Frontline aléatoire. Imprévisible pour tout le monde y compris vous. On itère, on pivote." },
-  actionnaireMajoritaire: { name: "L'Actionnaire Majoritaire", camp: 'bien', superpower: "Si vous êtes remercié par vote → le Leadership gagne immédiatement. Vous ne pouvez pas me virer. C'est moi qui possède la boîte." },
-  stagiaire: { name: 'Le Stagiaire', camp: 'bien', superpower: "Aucun pouvoir au début. Quand un joueur Frontline est remercié, vous héritez de son pouvoir (et savez lequel). Change à chaque nouveau Frontline remercié." },
+  ceo: { name: 'Le CEO', camp: 'mal', superpower: "À partir de Q2, vous remerciez un collègue chaque nuit. Personne ne sait qui vous êtes. Survivez et la restructuration aboutit." },
+  consultant: { name: 'Le Consultant', camp: 'mal', superpower: "Chaque nuit, choisissez un collègue à intoxiquer — ses infos deviennent fausses sans qu'il le sache. Un Deck de Slides (3 affirmations, 1 fausse) est publié au café. Cher et peu fiable." },
+  drh: { name: 'Le DRH', camp: 'mal', superpower: "Chaque nuit, bloquez le pouvoir d'un collègue. Il ne saura pas que son action n'a eu aucun effet." },
+  directeurFinancier: { name: 'Le Directeur Financier', camp: 'mal', superpower: "Lors du vote, inversez secrètement le vote d'un joueur ciblé. Les chiffres disent ce que vous voulez." },
+  fondateur: { name: 'Le Fondateur', camp: 'mal', superpower: "Usage unique. Si le CEO est remercié par vote, redirigez le remerciement vers quelqu'un d'autre. Le CEO survit." },
+  agentNettoyage: { name: "L'Agent de Nettoyage", camp: 'bien', superpower: "Chaque nuit, choisissez 3 collègues. On vous dit combien sont Leadership. Il passe partout, personne ne le remarque." },
+  analyste: { name: "L'Analyste", camp: 'bien', superpower: "Chaque nuit, choisissez un collègue. On vous dit combien de ses voisins directs (à sa gauche et à sa droite dans l'ordre de table) sont Leadership." },
+  chasseurDeTetes: { name: 'Le Chasseur de Têtes', camp: 'bien', superpower: "Chaque nuit, choisissez 2 collègues. On vous dit si l'un des deux est le CEO (oui ou non)." },
+  recruteur: { name: 'Le Recruteur', camp: 'bien', superpower: "Chaque nuit, choisissez 2 collègues. On vous révèle le rôle exact de l'un des deux (tiré au hasard)." },
+  assistanteDirection: { name: "L'Assistante de Direction", camp: 'bien', superpower: "Chaque nuit, on vous dit quels rôles ont agi (mais pas qui les a joués). Elle sait tout ce qui se passe." },
+  alternant: { name: "L'Alternant", camp: 'bien', superpower: "Après chaque vote, on vous dit si au moins un membre du Leadership a voté pour le remerciement. Personne ne fait attention à lui." },
+  agentAccueil: { name: "L'Agent d'Accueil", camp: 'bien', superpower: "Quand quelqu'un est remercié par vote, on vous révèle son camp (Frontline ou Leadership), mais pas son rôle exact." },
+  avocat: { name: "L'Avocat", camp: 'bien', superpower: "Chaque nuit, protégez un collègue (pas vous-même). Si le CEO le cible, le remerciement est annulé. Vous ne saurez pas si ça a servi." },
+  deleguePersonnel: { name: 'Le Délégué du Personnel', camp: 'bien', superpower: "Passif. Le CEO ne peut pas vous remercier la nuit. CDI en béton armé." },
+  responsableInfo: { name: 'Le Responsable Informatique', camp: 'bien', superpower: "Chaque nuit, verrouillez un collègue : il ne peut ni être ciblé, ni utiliser son pouvoir cette nuit. Gêne les deux camps." },
+  journaliste: { name: "Le Journaliste d'Investigation", camp: 'bien', superpower: "Usage unique, pendant le Meeting. Accusez un joueur : si c'est le CEO, la Frontline gagne immédiatement. Sinon, rien ne se passe." },
+  lanceurAlerte: { name: "Le Lanceur d'Alerte", camp: 'bien', superpower: "Quand vous êtes remercié, vous désignez un joueur. Au quarter suivant, un vote est automatiquement ouvert contre lui." },
+  inspecteurTravail: { name: "L'Inspecteur du Travail", camp: 'bien', superpower: "Passif, usage unique. Le premier joueur qui vous nomine est immédiatement remercié à votre place." },
+  cabinetReclassement: { name: 'Le Cabinet de Reclassement', camp: 'bien', superpower: "Usage unique. Choisissez un joueur déjà remercié : il revient en jeu avec son pouvoir." },
+  burnout: { name: 'Le Burn-out', camp: 'bien', superpower: "Vous croyez avoir un vrai rôle. Toutes les infos que vous recevez sont fausses. Physiquement là, mentalement aux Maldives." },
+  influenceur: { name: "L'Influenceur", camp: 'bien', superpower: "Le Leadership connaît votre identité dès le début. Vous êtes trop visible sur LinkedIn." },
+  delegueSyndical: { name: 'Le Délégué Syndical', camp: 'bien', superpower: "Tant que vous êtes en jeu, il faut 2 nominations (au lieu de 1) pour lancer un vote de remerciement." },
+  coach: { name: 'Le Coach', camp: 'bien', superpower: "Chaque nuit, vous copiez le pouvoir d'un rôle Frontline au hasard. Imprévisible, même pour vous. On itère, on pivote." },
+  actionnaireMajoritaire: { name: "L'Actionnaire Majoritaire", camp: 'bien', superpower: "Si vous êtes remercié par vote, le Leadership gagne immédiatement. On ne vire pas le propriétaire." },
+  stagiaire: { name: 'Le Stagiaire', camp: 'bien', superpower: "Pas de pouvoir au début. Quand un Frontline est remercié, vous héritez de son pouvoir. Change à chaque nouveau remerciement." },
 };
 
 class App {
@@ -734,12 +734,12 @@ class App {
             const myChoice = this.myVotes[n.targetId];
             let voteUI = '';
             if (voted) {
-              const choiceLabel = myChoice === 'fire' ? '🔴 Licencier' : '🟢 Garder';
+              const choiceLabel = myChoice === 'fire' ? '🔴 Remercier' : '🟢 Garder';
               voteUI = `<span style="font-size:0.8rem;">${choiceLabel}</span>`;
             } else if (!canVote) {
               voteUI = '<span class="dim" style="font-size:0.8rem;">vote épuisé</span>';
             } else {
-              voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Licencier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
+              voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Remercier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
             }
             const totalVoters = n.voters.length;
             return `
