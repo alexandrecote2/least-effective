@@ -742,12 +742,11 @@ class App {
               voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Licencier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
             }
             const totalVoters = n.voters.length;
-            const voteCount = n.votes;
             return `
               <div class="nom-card">
                 <div style="display:flex;flex-direction:column;gap:2px;">
                   <span style="font-weight:600;">${n.targetName}</span>
-                  <span class="dim" style="font-size:0.75rem;">${voteCount} licencier / ${totalVoters - voteCount} garder</span>
+                  <span class="dim" style="font-size:0.75rem;">${totalVoters} vote${totalVoters > 1 ? 's' : ''}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">${voteUI}</div>
               </div>

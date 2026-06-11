@@ -886,7 +886,12 @@ function broadcastGameState(game) {
       hasUsedDeadVote: p.hasUsedDeadVote,
       nightActionDone: p.nightActionDone || false,
     })),
-    nominations: game.nominations,
+    nominations: game.nominations.map(n => ({
+      targetId: n.targetId,
+      targetName: n.targetName,
+      nominatedBy: n.nominatedBy,
+      voters: n.voters,
+    })),
     morningMessages: game.morningMessages,
     winner: game.winner,
     deckDeSlides: game.deckDeSlides || null,
