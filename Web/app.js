@@ -300,7 +300,7 @@ class App {
       const campLabel = this.myCamp === 'mal' ? 'Leadership' : 'Frontline';
       app.innerHTML = `
         <div class="screen" style="justify-content:center;align-items:center;gap:20px;" onclick="app.hideRole()">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:3px;">VOTRE FICHE DE POSTE</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:3px;">VOTRE FICHE DE POSTE</p>
           <h2 style="font-size:1.6rem;color:var(--accent);">${this.myRoleName}</h2>
           <span class="badge ${campClass}">${campLabel}</span>
           <div class="card" style="max-width:320px;">
@@ -308,11 +308,11 @@ class App {
           </div>
           ${this.privateResult ? `
             <div class="card" style="border:1px solid var(--accent);max-width:320px;">
-              <p style="color:var(--accent);font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">DERNIER RAPPORT</p>
+              <p style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">DERNIER RAPPORT</p>
               <p style="font-size:0.85rem;">${this.privateResult}</p>
             </div>
           ` : ''}
-          <p class="dim" style="font-size:0.75rem;">Appuyez n'importe où pour fermer</p>
+          <p class="dim" style="font-size:0.85rem;">Appuyez n'importe où pour fermer</p>
         </div>
       `;
       return;
@@ -332,7 +332,7 @@ class App {
             const campDot = roleData.camp === 'mal' ? '🔴' : '🔵';
             return `<div style="padding:8px;background:rgba(255,255,255,0.03);border-radius:8px;">
               <p style="font-size:0.85rem;">${campDot} <strong>${r}</strong></p>
-              <p class="dim" style="font-size:0.75rem;margin-top:4px;">${roleData.superpower || ''}</p>
+              <p class="dim" style="font-size:0.85rem;margin-top:4px;">${roleData.superpower || ''}</p>
             </div>`;
           }).join('')}
         </div>
@@ -364,12 +364,12 @@ class App {
     if (!this.playerName) return '';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div>
-        <span style="opacity:0.6;font-size:0.75rem;">👤 ${this.playerName}</span>
+        <span style="opacity:0.6;font-size:0.85rem;">👤 ${this.playerName}</span>
       </div>
       <div style="display:flex;gap:6px;">
-        <button onclick="app.peekRole()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">🔒 Mon rôle</button>
-        <button onclick="app.toggleRoleGuide()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.7rem;padding:4px 8px;cursor:pointer;">📖 Rôles</button>
-        <button onclick="app.leaveGame()" style="background:none;border:1px solid rgba(255,100,100,0.3);border-radius:6px;color:var(--red);font-size:0.7rem;padding:4px 8px;cursor:pointer;">✕</button>
+        <button onclick="app.peekRole()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.8rem;padding:4px 8px;cursor:pointer;">🔒 Mon rôle</button>
+        <button onclick="app.toggleRoleGuide()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:0.8rem;padding:4px 8px;cursor:pointer;">📖 Rôles</button>
+        <button onclick="app.leaveGame()" style="background:none;border:1px solid rgba(255,100,100,0.3);border-radius:6px;color:var(--red);font-size:0.8rem;padding:4px 8px;cursor:pointer;">✕</button>
       </div>
     </div>`;
   }
@@ -388,7 +388,7 @@ class App {
       <div class="day-bar">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px;">
           <h2 style="margin:0;">Q${this.round}</h2>
-          <span style="font-size:0.75rem;opacity:0.6;">👥 ${this.players.filter(p => p.alive).length} actifs / 🏖️ ${this.players.filter(p => !p.alive).length} remerciés</span>
+          <span style="font-size:0.85rem;opacity:0.6;">👥 ${this.players.filter(p => p.alive).length} actifs / 🏖️ ${this.players.filter(p => !p.alive).length} remerciés</span>
         </div>
         <div class="phases">
           ${phases.map((p, i) => `
@@ -417,7 +417,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.7rem;opacity:0.4;">v3.0 — "La Restructuration"</p>
+        <p style="font-size:0.8rem;opacity:0.4;">v3.0 — "La Restructuration"</p>
       </div>
     `;
   }
@@ -425,7 +425,7 @@ class App {
   renderJoin() {
     const gamesHTML = this.availableGames?.length ? `
       <div style="width:100%;">
-        <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;text-align:center;">PARTIES EN COURS</p>
+        <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;text-align:center;">PARTIES EN COURS</p>
         ${this.availableGames.map(g => `
           <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="app.quickJoin('${g.code}')">
             <span style="font-family:monospace;color:var(--accent);font-weight:700;">${g.code}</span>
@@ -459,17 +459,17 @@ class App {
     return `
       <div class="screen" style="gap:24px;">
         <div class="center">
-          <p class="dim" style="font-size:0.75rem;">Code de réunion</p>
+          <p class="dim" style="font-size:0.85rem;">Code de réunion</p>
           <h2 style="font-size:2rem;color:var(--accent);font-family:monospace;">${this.gameCode}</h2>
-          <p class="dim" style="font-size:0.75rem;">Partagez à vos collègues</p>
+          <p class="dim" style="font-size:0.85rem;">Partagez à vos collègues</p>
         </div>
         <div>
-          <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">PARTICIPANTS (${this.players.length})</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">PARTICIPANTS (${this.players.length})</p>
           ${this.players.map(p => `
             <div class="player-item">
               <div class="player-dot connected"></div>
               <span>${p.name}</span>
-              <span class="dim" style="margin-left:auto;font-size:0.7rem;">onboardé</span>
+              <span class="dim" style="margin-left:auto;font-size:0.8rem;">onboardé</span>
             </div>
           `).join('')}
         </div>
@@ -491,15 +491,15 @@ class App {
     return `
       <div class="screen" style="gap:16px;">
         <div class="center" style="padding-top:20px;">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:3px;">🪑 PLAN DE TABLE</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:3px;">🪑 PLAN DE TABLE</p>
           <h2 style="font-size:1.3rem;margin-top:8px;">Organisez l'ordre autour de la table</h2>
-          <p class="dim italic" style="font-size:0.75rem;margin-top:4px;">De haut en bas = sens horaire</p>
+          <p class="dim italic" style="font-size:0.85rem;margin-top:4px;">De haut en bas = sens horaire</p>
         </div>
         ${isHost ? `
           <div style="flex:1;overflow-y:auto;">
             ${this.seatingOrder.map((p, i) => `
               <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:4px;">
-                <span class="dim" style="font-size:0.75rem;width:20px;">${i + 1}.</span>
+                <span class="dim" style="font-size:0.85rem;width:20px;">${i + 1}.</span>
                 <span style="flex:1;">${p.name}</span>
                 <button class="btn-move" onclick="app.moveSeat(${i}, -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
                 <button class="btn-move" onclick="app.moveSeat(${i}, 1)" ${i === this.seatingOrder.length - 1 ? 'disabled' : ''}>▼</button>
@@ -528,7 +528,7 @@ class App {
           <div class="spacer"></div>
           <div style="font-size:2rem;">⏳</div>
           <p class="dim italic center">En attente des autres collaborateurs...</p>
-          <p class="dim" style="font-size:0.75rem;">Gardez votre rôle pour vous.</p>
+          <p class="dim" style="font-size:0.85rem;">Gardez votre rôle pour vous.</p>
           <div class="spacer"></div>
         </div>
       `;
@@ -538,12 +538,12 @@ class App {
       <div class="screen" style="gap:16px;">
         ${this.renderPlayerHeader()}
         <div class="center" style="padding-top:20px;">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:3px;">VOTRE FICHE DE POSTE</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:3px;">VOTRE FICHE DE POSTE</p>
           <h2 style="font-size:1.6rem;margin-top:12px;color:var(--accent);">${this.myRoleName}</h2>
           <div style="margin-top:12px;"><span class="badge ${campClass}">${campLabel}</span></div>
         </div>
         <div class="card mt">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">SUPERPOWER</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">SUPERPOWER</p>
           <p>${role.superpower || ''}</p>
         </div>
         ${this.bonusInfo ? `
@@ -553,13 +553,13 @@ class App {
         ` : ''}
         ${this.possibleRoles.length > 0 ? `
           <div class="card" style="margin-top:12px;">
-            <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">RÔLES POSSIBLES DANS CETTE PARTIE</p>
+            <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">RÔLES POSSIBLES DANS CETTE PARTIE</p>
             ${this.possibleRoles.map(r => {
               const roleData = Object.values(ROLES).find(rd => rd.name === r) || {};
               const campDot = roleData.camp === 'mal' ? '🔴' : '🔵';
               return `<p style="font-size:0.8rem;margin-top:6px;">${campDot} <strong>${r}</strong> — <span class="dim">${roleData.superpower || ''}</span></p>`;
             }).join('')}
-            <p class="dim italic" style="font-size:0.7rem;margin-top:10px;">Certains de ces rôles ne sont peut-être pas en jeu.</p>
+            <p class="dim italic" style="font-size:0.8rem;margin-top:10px;">Certains de ces rôles ne sont peut-être pas en jeu.</p>
           </div>
         ` : ''}
         <div class="spacer"></div>
@@ -581,9 +581,9 @@ class App {
           <div class="icon-large">✓</div>
           <p class="dim italic center">Action soumise.<br>En attente des autres collaborateurs...</p>
           <p class="dim">${done}/${alive}</p>
-          ${waiting.length > 0 ? `<p class="dim" style="font-size:0.75rem;">En attente de : ${waiting.map(p => `${p.name}${!p.connected ? ' ⚠️' : ''}`).join(', ')}</p>` : ''}
+          ${waiting.length > 0 ? `<p class="dim" style="font-size:0.85rem;">En attente de : ${waiting.map(p => `${p.name}${!p.connected ? ' ⚠️' : ''}`).join(', ')}</p>` : ''}
           ${this.isHost && hasDisconnected ? `<button class="btn btn-secondary" style="margin-top:12px;" onclick="app.skipDisconnected()">Passer les déconnectés</button>` : ''}
-          ${this.isHost && !hasDisconnected && waiting.length > 0 ? `<button class="btn btn-ghost" style="margin-top:12px;font-size:0.75rem;" onclick="app.forceAdvanceNight()">Forcer le passage</button>` : ''}
+          ${this.isHost && !hasDisconnected && waiting.length > 0 ? `<button class="btn btn-ghost" style="margin-top:12px;font-size:0.85rem;" onclick="app.forceAdvanceNight()">Forcer le passage</button>` : ''}
           <div class="spacer"></div>
         </div>
       `;
@@ -621,7 +621,7 @@ class App {
         <div class="spacer"></div>
         <div class="center">
           <p style="color:var(--accent);font-weight:800;font-size:1rem;">${this.nightRoleName}</p>
-          <p class="dim italic" style="font-size:0.75rem;margin-top:6px;padding:0 20px;">${noActionRole.superpower || ''}</p>
+          <p class="dim italic" style="font-size:0.85rem;margin-top:6px;padding:0 20px;">${noActionRole.superpower || ''}</p>
         </div>
         <div class="icon-large">🚇</div>
         <p style="font-size:1.2rem;color:var(--accent);font-weight:700;text-align:center;">Métro, boulot, dodo.</p>
@@ -635,16 +635,16 @@ class App {
   renderCafe() {
     const privateResultHTML = this.privateResult ? `
       <div class="card" style="border:1px solid var(--accent);margin-top:8px;">
-        <p style="color:var(--accent);font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">📋 VOTRE RAPPORT CONFIDENTIEL</p>
+        <p style="color:var(--accent);font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">📋 VOTRE RAPPORT CONFIDENTIEL</p>
         <p>${this.privateResult}</p>
       </div>
     ` : '';
 
     const slidesHTML = this.deckDeSlides ? `
       <div class="card" style="border:1px solid var(--orange);margin-top:8px;">
-        <p style="color:var(--orange);font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">📊 DECK DE SLIDES — "Executive Summary"</p>
+        <p style="color:var(--orange);font-size:0.8rem;letter-spacing:2px;margin-bottom:8px;">📊 DECK DE SLIDES — "Executive Summary"</p>
         ${this.deckDeSlides.map(s => `<p style="margin-top:6px;">• ${s}</p>`).join('')}
-        <p class="dim italic" style="margin-top:10px;font-size:0.75rem;">2 de ces affirmations sont vraies. 1 est fausse.</p>
+        <p class="dim italic" style="margin-top:10px;font-size:0.85rem;">2 de ces affirmations sont vraies. 1 est fausse.</p>
       </div>
     ` : '';
 
@@ -737,7 +737,7 @@ class App {
               const choiceLabel = myChoice === 'fire' ? '🔴 Licencier' : '🟢 Garder';
               voteUI = `<span style="font-size:0.8rem;">${choiceLabel}</span>`;
             } else if (!canVote) {
-              voteUI = '<span class="dim" style="font-size:0.7rem;">vote épuisé</span>';
+              voteUI = '<span class="dim" style="font-size:0.8rem;">vote épuisé</span>';
             } else {
               voteUI = `<button class="vote-btn" style="background:var(--red);" onclick="app.vote('${n.targetId}')">Licencier</button><button class="vote-btn" style="background:rgba(255,255,255,0.1);margin-left:4px;" onclick="app.voteKeep('${n.targetId}')">Garder</button>`;
             }
@@ -746,7 +746,7 @@ class App {
               <div class="nom-card">
                 <div style="display:flex;flex-direction:column;gap:2px;">
                   <span style="font-weight:600;">${n.targetName}</span>
-                  <span class="dim" style="font-size:0.75rem;">${totalVoters} vote${totalVoters > 1 ? 's' : ''}</span>
+                  <span class="dim" style="font-size:0.85rem;">${totalVoters} vote${totalVoters > 1 ? 's' : ''}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">${voteUI}</div>
               </div>
@@ -773,7 +773,7 @@ class App {
             } else if (this.nominations.length > 0) {
               buttons += `<button class="btn btn-ghost" style="font-size:0.8rem;" onclick="app.closeDay()">19h — Clore sans votes</button>`;
             } else {
-              buttons += `<button class="btn btn-ghost" style="font-size:0.75rem;opacity:0.5;" onclick="app.closeDayNoVote()">19h — Passer sans voter</button>`;
+              buttons += `<button class="btn btn-ghost" style="font-size:0.85rem;opacity:0.5;" onclick="app.closeDayNoVote()">19h — Passer sans voter</button>`;
             }
           }
           return buttons;
@@ -790,7 +790,7 @@ class App {
     if (this.gameLog && this.gameLog.roles) {
       roleRevealHTML = `
         <div style="width:100%;max-width:400px;">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:12px;text-align:center;">RÉVÉLATION DES DOSSIERS RH</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:12px;text-align:center;">RÉVÉLATION DES DOSSIERS RH</p>
           ${this.gameLog.roles.map(p => {
             const role = ROLES[p.role] || {};
             const campColor = role.camp === 'mal' ? 'var(--red)' : 'var(--blue)';
@@ -812,7 +812,7 @@ class App {
     if (this.gameLog && this.gameLog.history) {
       historyHTML = `
         <div style="width:100%;max-width:400px;margin-top:20px;">
-          <p class="dim" style="font-size:0.7rem;letter-spacing:2px;margin-bottom:12px;text-align:center;">POST-MORTEM — ROUND PAR ROUND</p>
+          <p class="dim" style="font-size:0.8rem;letter-spacing:2px;margin-bottom:12px;text-align:center;">POST-MORTEM — ROUND PAR ROUND</p>
           ${this.gameLog.history.map(round => `
             <div class="card" style="margin-bottom:8px;padding:12px;">
               <p style="color:var(--accent);font-weight:700;font-size:0.85rem;">Q${round.round}</p>
