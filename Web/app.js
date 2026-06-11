@@ -69,6 +69,15 @@ class App {
       this.isHost = s.isHost || false;
     }
 
+    // Connection guardian — survives sleep/wake
+    this._lastReceived = 0;
+    this._reconnectAttempt = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this._healthCheck();
+    });
+    window.addEventListener('focus', () => this._healthCheck());
+    window.addEventListener('online', () => this._healthCheck());
+
     this.render();
   }
 
@@ -85,59 +94,99 @@ class App {
     localStorage.removeItem('le_session');
   }
 
-  connect() {
+  _getWsUrl() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = location.hostname || 'localhost';
     const port = location.port || (protocol === 'wss:' ? 443 : 80);
-    const wsUrl = port == 443 || port == 80 ? `${protocol}//${host}` : `${protocol}//${host}:${port}`;
-    this.ws = new WebSocket(wsUrl);
+    return port == 443 || port == 80 ? `${protocol}//${host}` : `${protocol}//${host}:${port}`;
+  }
 
-    this.ws.onopen = () => {
-      this.startPing();
-      this.render();
-    };
-    this.ws.onclose = () => {
-      this.stopPing();
+  _healthCheck() {
+    const stale = Date.now() - this._lastReceived > 30000;
+    const dead = !this.ws || this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CLOSING;
+
+    if (dead || stale) {
+      this._forceReconnect();
+      return;
+    }
+
+    // WS thinks it's open — verify with a ping/pong under 3s
+    this._awaitingPong = true;
+    this.send({ type: 'ping' });
+    clearTimeout(this._pongTimeout);
+    this._pongTimeout = setTimeout(() => {
+      if (this._awaitingPong) this._forceReconnect();
+    }, 3000);
+  }
+
+  _forceReconnect() {
+    if (this.reconnecting) return;
+    if (this.ws) { try { this.ws.close(); } catch(e) {} this.ws = null; }
+    if (this.gameCode && this.playerId) {
+      this._doConnect(true);
+    } else {
       this.phase = 'disconnected';
       this.render();
+    }
+  }
+
+  _doConnect(isRejoin) {
+    this.reconnecting = true;
+    this._reconnectAttempt++;
+    const attempt = this._reconnectAttempt;
+
+    this.ws = new WebSocket(this._getWsUrl());
+
+    this.ws.onopen = () => {
+      this.reconnecting = false;
+      this._reconnectAttempt = 0;
+      this._lastReceived = Date.now();
+      this._startPing();
+      if (isRejoin && this.gameCode && this.playerId) {
+        this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
+      }
+      this.render();
     };
+
+    this.ws.onclose = () => {
+      this._stopPing();
+      this.reconnecting = false;
+      if (this.gameCode && this.playerId && attempt < 5) {
+        setTimeout(() => this._forceReconnect(), Math.min(1000 * attempt, 5000));
+      } else {
+        this.phase = 'disconnected';
+        this.render();
+      }
+    };
+
     this.ws.onerror = () => {};
-    this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
+    this.ws.onmessage = (e) => {
+      this._lastReceived = Date.now();
+      this._awaitingPong = false;
+      this.handleMessage(JSON.parse(e.data));
+    };
   }
 
-  startPing() {
-    this.stopPing();
-    this._pingInterval = setInterval(() => {
-      if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping' });
-    }, 20000);
-  }
-
-  stopPing() {
-    if (this._pingInterval) { clearInterval(this._pingInterval); this._pingInterval = null; }
+  connect() {
+    this._doConnect(false);
   }
 
   rejoin() {
-    this.reconnecting = true;
-    this.render();
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = location.hostname || 'localhost';
-    const port = location.port || (protocol === 'wss:' ? 443 : 80);
-    const wsUrl = port == 443 || port == 80 ? `${protocol}//${host}` : `${protocol}//${host}:${port}`;
-    this.ws = new WebSocket(wsUrl);
+    this._doConnect(true);
+  }
 
-    this.ws.onopen = () => {
-      this.reconnecting = false;
-      this.startPing();
-      this.send({ type: 'rejoinGame', code: this.gameCode, playerId: this.playerId, playerName: this.playerName });
-    };
-    this.ws.onclose = () => {
-      this.stopPing();
-      this.reconnecting = false;
-      this.phase = 'disconnected';
-      this.render();
-    };
-    this.ws.onerror = () => {};
-    this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
+  _startPing() {
+    this._stopPing();
+    this._pingInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.send({ type: 'ping' });
+      }
+    }, 15000);
+  }
+
+  _stopPing() {
+    if (this._pingInterval) { clearInterval(this._pingInterval); this._pingInterval = null; }
+    clearTimeout(this._pongTimeout);
   }
 
   send(data) {
@@ -148,6 +197,7 @@ class App {
 
   handleMessage(msg) {
     switch (msg.type) {
+      case 'pong': return;
       case 'connected':
         if (!this.playerId) {
           this.playerId = msg.playerId;
