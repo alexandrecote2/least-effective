@@ -540,9 +540,13 @@ class App {
           <p style="margin-top:6px;"><strong>🔴 Leadership gagne</strong> s'il ne reste que 2 joueurs en jeu.</p>
         </div>
         <div class="card">
+          <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">💀 Qui peut être remercié ?</p>
+          <p><strong>Par vote</strong> — En Meeting, nominez un collègue. Si la majorité vote "Remercier", il quitte la partie.</p>
+          <p style="margin-top:6px;"><strong>Par le CEO</strong> — Chaque nuit (à partir de Q2), le CEO remercie secrètement un collègue. On découvre qui au Café du matin.</p>
+        </div>
+        <div class="card">
           <p style="font-weight:700;color:var(--accent);margin-bottom:8px;">💡 À savoir</p>
-          <p>• Q1 n'a pas de Meeting — c'est la nuit directement après les rôles.</p>
-          <p style="margin-top:4px;">• Le CEO ne peut remercier personne en Q1.</p>
+          <p>• Q1 n'a pas de Meeting et le CEO ne peut pas encore agir — personne ne part en Q1.</p>
           <p style="margin-top:4px;">• Les joueurs remerciés ont encore 1 vote à utiliser une seule fois.</p>
           <p style="margin-top:4px;">• Votre pouvoir est décrit sur votre fiche de poste (écran suivant).</p>
         </div>
