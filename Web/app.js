@@ -700,7 +700,14 @@ class App {
             buttons += `<p class="dim italic center" style="font-size:0.8rem;">🏖️ Vous êtes en transition professionnelle</p>`;
           }
           if (this.isHost) {
-            buttons += `<button class="btn btn-secondary" onclick="app.closeDay()">19h — Clore la journée</button>`;
+            const hasVotes = this.nominations.some(n => n.voters.length > 0);
+            if (hasVotes) {
+              buttons += `<button class="btn btn-secondary" onclick="app.closeDay()">19h — Clore la journée</button>`;
+            } else if (this.nominations.length > 0) {
+              buttons += `<button class="btn btn-ghost" style="font-size:0.8rem;" onclick="app.closeDay()">19h — Clore sans votes</button>`;
+            } else {
+              buttons += `<button class="btn btn-ghost" style="font-size:0.75rem;opacity:0.5;" onclick="app.closeDayNoVote()">19h — Passer sans voter</button>`;
+            }
           }
           return buttons;
         })()}
@@ -955,6 +962,12 @@ class App {
 
   closeDay() {
     this.send({ type: 'closeDay' });
+  }
+
+  closeDayNoVote() {
+    if (confirm('Personne n\'a été nominé. Passer directement au closing ?')) {
+      this.send({ type: 'closeDay' });
+    }
   }
 
   deleteGame() {
