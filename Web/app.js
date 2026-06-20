@@ -422,7 +422,7 @@ class App {
           <p style="margin-top:8px;opacity:0.7;font-style:italic;">"Restructuring in progress"</p>
         </div>
         <button class="btn btn-primary" onclick="app.connect()">Rejoindre une partie</button>
-        <p style="font-size:0.8rem;opacity:0.4;">v3.1 — "La Restructuration"</p>
+        <p style="font-size:0.8rem;opacity:0.4;">v1.0 — "Le Plan de Succession"</p>
       </div>
     `;
   }
