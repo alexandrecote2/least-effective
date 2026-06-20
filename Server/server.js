@@ -139,26 +139,20 @@ function getRolesForPlayerCount(n) {
   if (n <= 5) {
     roles.push('ceo');
     roles.push(...shuffle(frontlinePool).slice(0, n - 1));
-  } else if (n <= 8) {
-    roles.push('ceo', 'consultant');
+  } else if (n <= 7) {
+    // 6-7p: CEO + random(consultant OR drh) — players never know which
+    roles.push('ceo', Math.random() < 0.5 ? 'consultant' : 'drh');
     roles.push(shuffle(outsiderPool)[0]);
     roles.push(...shuffle(frontlinePool).slice(0, n - 3));
   } else if (n <= 10) {
-    roles.push('ceo', 'consultant');
-    roles.push(...shuffle(outsiderPool).slice(0, 2));
-    roles.push(...shuffle(frontlinePool).slice(0, n - 4));
-  } else if (n <= 12) {
+    // 8-10p: CEO + consultant + drh
     roles.push('ceo', 'consultant', 'drh');
     roles.push(...shuffle(outsiderPool).slice(0, 2));
     roles.push(...shuffle(frontlinePool).slice(0, n - 5));
-  } else if (n === 13) {
-    roles.push('ceo', 'consultant', 'drh');
-    roles.push(...shuffle(outsiderPool).slice(0, 2));
-    roles.push(...shuffle(frontlinePool).slice(0, 8));
-  } else if (n === 14) {
+  } else if (n <= 13) {
     roles.push('ceo', 'consultant', 'drh', 'directeurFinancier');
     roles.push(...shuffle(outsiderPool).slice(0, 2));
-    roles.push(...shuffle(frontlinePool).slice(0, 8));
+    roles.push(...shuffle(frontlinePool).slice(0, n - 6));
   } else if (n <= 17) {
     roles.push('ceo', 'consultant', 'drh', 'directeurFinancier');
     roles.push(...shuffle(outsiderPool).slice(0, 3));
@@ -196,10 +190,15 @@ function getAlivePlayers(game) {
   return game.players.filter(p => p.alive);
 }
 
-function needsNightAction(role, round) {
-  const actionRoles = ['ceo', 'drh', 'consultant', 'avocat', 'responsableInfo',
+function needsNightAction(role, round, game) {
+  const actionRoles = ['ceo', 'consultant', 'avocat', 'responsableInfo',
     'agentNettoyage', 'analyste', 'chasseurDeTetes', 'recruteur', 'stagiaire'];
   if (role === 'ceo' && round <= 1) return false;
+  // DRH: only acts as killer after succession (with transition delay)
+  if (role === 'drh') {
+    if (!game?.drhSuccession) return false;
+    return round >= game.drhSuccession.canKillFromRound;
+  }
   return actionRoles.includes(role);
 }
 
@@ -234,7 +233,7 @@ function generateDeckDeSlides(game) {
   // True: "Il y a X membres du Leadership actifs"
   trueStatements.push(`Il y a ${evil.length} membres du Leadership encore actifs`);
   // True: "[player] a un pouvoir actif"
-  const withPower = alive.filter(p => needsNightAction(p.role, game.round));
+  const withPower = alive.filter(p => needsNightAction(p.role, game.round, game));
   if (withPower.length > 0) {
     const p = shuffle(withPower)[0];
     trueStatements.push(`${p.name} a un pouvoir actif`);
@@ -261,7 +260,7 @@ function generateDeckDeSlides(game) {
     falseStatements.push(`Il y a ${evil.length - 1} membres du Leadership encore actifs`);
   }
   // False: "[good player] n'a aucun pouvoir actif" (but they do)
-  const goodWithPower = good.filter(p => needsNightAction(p.role, game.round));
+  const goodWithPower = good.filter(p => needsNightAction(p.role, game.round, game));
   if (goodWithPower.length > 0) {
     const p = shuffle(goodWithPower)[0];
     falseStatements.push(`${p.name} n'a aucun pouvoir actif`);
@@ -302,11 +301,7 @@ function resolveNight(game) {
   const burnoutPlayer = players.find(p => p.role === 'burnout' && p.alive);
   if (burnoutPlayer) burnoutPlayer.poisoned = true;
 
-  // 1. DRH blocks
-  if (actions.drh?.targets?.[0]) {
-    const target = findPlayer(actions.drh.targets[0]);
-    if (target) target.blocked = true;
-  }
+  // 1. DRH — passive role (succession only), no blocking action
 
   // 2. Consulting — always poisons target AND generates slides (no feedback)
   game.deckDeSlides = null;
@@ -364,12 +359,32 @@ function resolveNight(game) {
     game.pendingVoteElimination = null;
   }
 
-  // 5. CEO kills
-  if (game.round >= 2 && actions.ceo?.targets?.[0]) {
-    const target = findPlayer(actions.ceo.targets[0]);
+  // 5. CEO kills (or DRH after succession)
+  const ceoKillAction = actions.ceo?.targets?.[0] || (game.drhSuccession && actions.drh?.targets?.[0]);
+  const ceoCanKill = game.drhSuccession
+    ? game.round >= game.drhSuccession.canKillFromRound
+    : game.round >= 2;
+  if (ceoCanKill && ceoKillAction) {
+    const target = findPlayer(ceoKillAction);
     if (target && !target.protected && target.role !== 'deleguePersonnel') {
       target.alive = false;
       game.morningMessages.push(`${target.name} a été remercié(e). Son dossier RH reste confidentiel.`);
+      // Influenceur killed at night: reveal active CEO direction
+      if (target.role === 'influenceur') {
+        const activeCeo = game.drhSuccession
+          ? players.find(p => p.role === 'drh')
+          : players.find(p => p.role === 'ceo');
+        if (activeCeo) {
+          const allPlayers = game.players;
+          const myIdx = allPlayers.findIndex(p => p.id === target.id);
+          const ceoIdx = allPlayers.findIndex(p => p.id === activeCeo.id);
+          const n = allPlayers.length;
+          const distRight = (ceoIdx - myIdx + n) % n;
+          const distLeft = (myIdx - ceoIdx + n) % n;
+          const direction = distRight <= distLeft ? 'à droite' : 'à gauche';
+          game.morningMessages.push(`📱 Le dernier post LinkedIn de ${target.name} mentionnait que le CEO était ${direction} de lui/elle dans le cercle.`);
+        }
+      }
       roundEvents.push(`${target.name} remercié(e) par le CEO`);
       // Stagiaire inherits from CEO-killed Frontline
       if (ROLES[target.role]?.category === 'frontline') {
@@ -466,7 +481,7 @@ function resolveNight(game) {
     if (eaPlayer.poisoned) {
       // Credible: pick roles that exist in this game and have night actions
       const credibleRoles = game.players
-        .filter(p => p.alive && p.id !== eaPlayer.id && needsNightAction(p.role, game.round))
+        .filter(p => p.alive && p.id !== eaPlayer.id && needsNightAction(p.role, game.round, game))
         .map(p => ROLES[p.role]?.name).filter(Boolean);
       const fakeSet = credibleRoles.length > 0 ? credibleRoles : ['Le Juriste', 'Le Consulting'];
       const picked = fakeSet.sort(() => Math.random() - 0.5).slice(0, Math.min(2, fakeSet.length));
@@ -518,7 +533,7 @@ function resolveNight(game) {
       case 'ceo':
         break;
       case 'drh':
-        roundEvents.push(`🚫 ${actor.name} (DRH) a empêché ${names} d'utiliser son pouvoir cette nuit — ${names} n'a rien reçu et ne le sait pas`);
+        roundEvents.push(`🔪 ${actor.name} (DRH/CEO) a ciblé ${names} pour remerciement nocturne (succession active)`);
         break;
       case 'consultant':
         roundEvents.push(`💉📊 ${actor.name} (Consultant) a empoisonné ${names} (infos fausses) + publié un Deck de Slides`);
@@ -559,7 +574,21 @@ function resolveNight(game) {
 
 function checkWinConditions(game) {
   const ceo = game.players.find(p => p.role === 'ceo');
+  const drh = game.players.find(p => p.role === 'drh');
   if (ceo && !ceo.alive) {
+    // DRH succession: if DRH is alive, they take over instead of frontline winning
+    if (drh && drh.alive && !game.drhSuccession) {
+      game.drhSuccession = { activatedRound: game.round, canKillFromRound: game.round + 2 };
+      game.morningMessages = game.morningMessages || [];
+      game.morningMessages.push("📋 Le conseil d'administration a activé le plan de succession. Un nouveau CEO prendra ses fonctions sous peu.");
+    } else if (!drh || !drh.alive) {
+      game.winner = 'frontline';
+      game.phase = 'gameEnd';
+      return;
+    }
+  }
+  // If DRH took over and is now dead too, frontline wins
+  if (game.drhSuccession && drh && !drh.alive) {
     game.winner = 'frontline';
     game.phase = 'gameEnd';
     return;
@@ -578,7 +607,20 @@ function checkWinConditions(game) {
 
 const clients = new Map();
 
+// Server-side heartbeat: detect dead connections
+const HEARTBEAT_INTERVAL = 25000;
+setInterval(() => {
+  wss.clients.forEach(ws => {
+    if (ws.isAlive === false) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, HEARTBEAT_INTERVAL);
+
 wss.on('connection', (ws) => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+
   let playerId = uuidv4();
   clients.set(ws, { playerId, gameCode: null });
 
@@ -640,6 +682,19 @@ wss.on('connection', (ws) => {
           if (ROLES[existingPlayer.role]?.camp === 'mal' && influenceur) {
             bonuses.push(`Il semble que ${influenceur.name} soit très impliqué(e) sur LinkedIn récemment.`);
           }
+          if (existingPlayer.role === 'influenceur') {
+            const ceoPlayer = game.players.find(p => p.role === 'ceo');
+            if (ceoPlayer) {
+              const allPlayers = game.players;
+              const myIdx = allPlayers.findIndex(p => p.id === existingPlayer.id);
+              const ceoIdx = allPlayers.findIndex(p => p.id === ceoPlayer.id);
+              const n = allPlayers.length;
+              const distRight = (ceoIdx - myIdx + n) % n;
+              const distLeft = (myIdx - ceoIdx + n) % n;
+              const direction = distRight <= distLeft ? 'à votre droite' : 'à votre gauche';
+              bonuses.push(`🔍 Votre intuition LinkedIn vous dit que le CEO est quelque part ${direction} dans le cercle.`);
+            }
+          }
           roleMsg.bonusInfo = bonuses.join('\n\n');
           const allRolesInScript = game.players.map(p => ROLES[p.role]?.name).filter(Boolean);
           const decoyPool = ["L'Inspecteur du Travail", "Le Lanceur d'Alerte", "Le Cabinet de Reclassement", "Le Délégué du Personnel", "L'Agent d'Accueil", "Le Responsable Informatique"];
@@ -653,7 +708,7 @@ wss.on('connection', (ws) => {
           let effectiveRole = existingPlayer.role;
           if (existingPlayer.role === 'stagiaire' && existingPlayer.inheritedRole) effectiveRole = existingPlayer.inheritedRole;
           if (existingPlayer.fakeRole) effectiveRole = existingPlayer.fakeRole;
-          const hasAction = needsNightAction(effectiveRole, game.round);
+          const hasAction = needsNightAction(effectiveRole, game.round, game);
           const targets = targetCount(effectiveRole);
           const selectablePlayers = game.players
             .filter(p => p.id !== existingPlayer.id && p.alive)
@@ -959,6 +1014,21 @@ function broadcastPrivateRoles(game) {
           bonuses.push(`Il semble que ${influenceur.name} soit très impliqué(e) sur LinkedIn récemment.`);
         }
 
+        // Influenceur bonus: CEO direction
+        if (player.role === 'influenceur') {
+          const ceoPlayer = game.players.find(p => p.role === 'ceo');
+          if (ceoPlayer) {
+            const allPlayers = game.players;
+            const myIdx = allPlayers.findIndex(p => p.id === player.id);
+            const ceoIdx = allPlayers.findIndex(p => p.id === ceoPlayer.id);
+            const n = allPlayers.length;
+            const distRight = (ceoIdx - myIdx + n) % n;
+            const distLeft = (myIdx - ceoIdx + n) % n;
+            const direction = distRight <= distLeft ? 'à votre droite' : 'à votre gauche';
+            bonuses.push(`🔍 Votre intuition LinkedIn vous dit que le CEO est quelque part ${direction} dans le cercle.`);
+          }
+        }
+
         msg.bonusInfo = bonuses.join('\n\n');
 
         // Everyone gets the list of possible roles in this script
@@ -986,7 +1056,7 @@ function broadcastNightPrompts(game) {
       let effectiveRole = player.role;
       if (player.role === 'stagiaire' && player.inheritedRole) effectiveRole = player.inheritedRole;
       if (player.fakeRole) effectiveRole = player.fakeRole;
-      const hasAction = needsNightAction(effectiveRole, game.round);
+      const hasAction = needsNightAction(effectiveRole, game.round, game);
       const targets = targetCount(effectiveRole);
       const selectablePlayers = game.players
         .filter(p => p.id !== player.id && p.alive)
@@ -1016,7 +1086,7 @@ function broadcastNightPrompts(game) {
 function triggerBots(game) {
   const aliveBots = game.players.filter(p => p.isBot && p.alive && !p.nightActionDone);
   for (const bot of aliveBots) {
-    const hasAction = needsNightAction(bot.role, game.round);
+    const hasAction = needsNightAction(bot.role, game.round, game);
     if (hasAction) {
       const targets = targetCount(bot.role);
       const selectablePlayers = game.players.filter(p => p.alive && p.id !== bot.id);

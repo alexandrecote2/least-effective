@@ -5,7 +5,7 @@
 const ROLES = {
   ceo: { name: 'Le CEO', camp: 'mal', superpower: "À partir de Q2, vous remerciez un collègue chaque nuit. Personne ne sait qui vous êtes. Survivez et la restructuration aboutit." },
   consultant: { name: 'Le Consultant', camp: 'mal', superpower: "Chaque nuit, choisissez un collègue à intoxiquer — ses infos deviennent fausses sans qu'il le sache. Un Deck de Slides (3 affirmations, 1 fausse) est publié au café. Cher et peu fiable." },
-  drh: { name: 'Le DRH', camp: 'mal', superpower: "Chaque nuit, bloquez le pouvoir d'un collègue. Il ne saura pas que son action n'a eu aucun effet." },
+  drh: { name: 'Le DRH', camp: 'mal', superpower: "Plan de succession. Si le CEO est remercié par vote, vous prenez sa place après un quarter de transition. Vous commencez alors à remercier un collègue chaque nuit." },
   directeurFinancier: { name: 'Le Directeur Financier', camp: 'mal', superpower: "Lors du vote, inversez secrètement le vote d'un joueur ciblé. Les chiffres disent ce que vous voulez." },
   fondateur: { name: 'Le Fondateur', camp: 'mal', superpower: "Usage unique. Si le CEO est remercié par vote, redirigez le remerciement vers quelqu'un d'autre. Le CEO survit." },
   agentNettoyage: { name: "L'Agent de Nettoyage", camp: 'bien', superpower: "Chaque nuit, choisissez 3 collègues. On vous dit combien sont dans le Leadership. Il passe partout, personne ne le remarque." },
@@ -23,7 +23,7 @@ const ROLES = {
   inspecteurTravail: { name: "L'Inspecteur du Travail", camp: 'bien', superpower: "Passif, usage unique. Le premier joueur qui vous nomine est immédiatement remercié à votre place." },
   cabinetReclassement: { name: 'Le Cabinet de Reclassement', camp: 'bien', superpower: "Usage unique. Choisissez un joueur déjà remercié : il revient en jeu avec son pouvoir." },
   burnout: { name: 'Le Burn-out', camp: 'bien', superpower: "Vous croyez avoir un vrai rôle. Toutes les infos que vous recevez sont fausses. Physiquement là, mentalement aux Maldives." },
-  influenceur: { name: "L'Influenceur", camp: 'bien', superpower: "Le Leadership connaît votre identité dès le début. Vous êtes trop visible sur LinkedIn." },
+  influenceur: { name: "L'Influenceur", camp: 'bien', superpower: "Le Leadership connaît votre identité dès le début. En échange, vous savez si le CEO est à votre gauche ou à votre droite dans le cercle. Si vous êtes remercié(e) la nuit, cette direction est publiée au bulletin du matin." },
   delegueSyndical: { name: 'Le Délégué Syndical', camp: 'bien', superpower: "Tant que vous êtes en jeu, il faut 2 nominations (au lieu de 1) pour lancer un vote de remerciement." },
   coach: { name: 'Le Coach', camp: 'bien', superpower: "Chaque nuit, vous copiez le pouvoir d'un rôle Frontline au hasard. Imprévisible, même pour vous. On itère, on pivote." },
   actionnaireMajoritaire: { name: "L'Actionnaire Majoritaire", camp: 'bien', superpower: "Si vous êtes remercié par vote, le Leadership gagne immédiatement. On ne vire pas le propriétaire." },
@@ -106,7 +106,7 @@ class App {
   }
 
   _healthCheck() {
-    const stale = Date.now() - this._lastReceived > 30000;
+    const stale = Date.now() - this._lastReceived > 20000;
     const dead = !this.ws || this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CLOSING;
 
     if (dead || stale) {
@@ -185,7 +185,7 @@ class App {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.send({ type: 'ping' });
       }
-    }, 15000);
+    }, 10000);
   }
 
   _stopPing() {
