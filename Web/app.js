@@ -415,7 +415,7 @@ class App {
   renderHome() {
     return `
       <div class="screen" style="justify-content:center;align-items:center;gap:30px;background:linear-gradient(135deg, var(--logo-red) 0%, var(--logo-blue) 100%);">
-        <img src="logo.png" alt="Least Effective" style="width:220px;height:220px;border-radius:44px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <img src="logo.png" alt="Least Effective" style="width:220px;height:220px;border-radius:44px;box-shadow:0 8px 32px rgba(0,0,0,0.4);background:linear-gradient(135deg, var(--logo-red), var(--logo-blue));">
         <div class="center">
           <h1 style="font-size:2.2rem;font-weight:900;">LEAST</h1>
           <h1 style="font-size:2.2rem;font-weight:900;color:var(--accent);">EFFECTIVE</h1>
