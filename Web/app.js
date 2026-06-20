@@ -59,8 +59,12 @@ class App {
     this.reconnecting = false;
     this.myVotes = {}; // targetId -> 'fire' | 'keep'
 
+    // Per-tab session key (use ?slot=N to isolate tabs for testing)
+    const params = new URLSearchParams(location.search);
+    this._sessionKey = params.get('slot') ? `le_session_${params.get('slot')}` : 'le_session';
+
     // Restore session from localStorage
-    const saved = localStorage.getItem('le_session');
+    const saved = localStorage.getItem(this._sessionKey);
     if (saved) {
       const s = JSON.parse(saved);
       this.playerId = s.playerId;
@@ -82,7 +86,7 @@ class App {
   }
 
   saveSession() {
-    localStorage.setItem('le_session', JSON.stringify({
+    localStorage.setItem(this._sessionKey, JSON.stringify({
       playerId: this.playerId,
       gameCode: this.gameCode,
       playerName: this.playerName,
@@ -91,7 +95,7 @@ class App {
   }
 
   clearSession() {
-    localStorage.removeItem('le_session');
+    localStorage.removeItem(this._sessionKey);
   }
 
   _getWsUrl() {
